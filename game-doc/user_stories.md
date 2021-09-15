@@ -14,10 +14,11 @@
 - L'utilisateur peut cliquer sur le bouton annuler pour annuler un coup. La carte, le score, le palier de niveau et l'inventaire sont mis à jour en conséquence. **L'état de la partie doit être exactement le même.**
 - L'utilisateur peut cliquer sur le bouton refaire pour refaire un coup qu'il vient d'annuler. La carte, le score, le palier de niveau et l'inventaire sont mis à jour en conséquence.
 - L'utilisateur peut cliquer sur le bouton fin de partie pour terminer la partie.
-- Lorsque la partie se termine, le score de la partie est enregistré dans le classement. L'utilisateur peut retourner sur l'écran d'accueil.
+- L'utilisateur peut choisir un pseudo afin d'identifier le score de sa partie. Lorsque que l'utilisateur clique sur le champ texte "name", il peut changer son pseudo qui sera affiché en jeu (en haut à droite sur l'interface utilisateur, en dessous du nom de la carte).
+- Lorsque la partie se termine, le score de la partie est enregistré dans le classement avec le pseudo de l'utilisateur. L'utilisateur peut retourner sur l'écran d'accueil.
 
 ## Calcul des points d'un coup
-maison: `6 + 5 * foret + -1 * maison + 8 * fontaine` // rayon 1
-cirque: `8 + 15 * maison * -25 * cirque` // rayon 3
-fontaine: `6 + 8 * maison + 6 * cirque` // rayon 1
-éolienne: `15 + -8 * maison + -4 * foret + 10 * lac` // rayon 2
+- maison: `6 + 5 * foret + -1 * maison + 8 * fontaine` // rayon 1
+- cirque: `8 + 15 * maison * -25 * cirque` // rayon 3
+- fontaine: `6 + 8 * maison + 6 * cirque` // rayon 1
+- éolienne: `15 + -8 * maison + -4 * foret + 10 * lac` // rayon 2
