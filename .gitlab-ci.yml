@@ -88,7 +88,6 @@ front:test:
     - front:build
   before_script:
     - cd game-frontend
-    - export CHROME_BIN=
   script:
     - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=junit
   artifacts:
@@ -126,6 +125,8 @@ front:report:
     - check
   needs:
     - front:test
+  script:
+    - cd game-frontend
   artifacts:
     reports:
       junit: game-frontend/tests/junit-test-results.xml
