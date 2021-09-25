@@ -6,7 +6,7 @@ stages:
 
 variables:
   MAVEN_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/maven:3.8-openjdk-11"
-  NODE-CHROME_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/node-chrome:16"
+  NODE_CHROME_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/node-chrome:16"
 
 pull-images:
   stage: .pre
@@ -20,9 +20,9 @@ pull-images:
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker pull maven:3.8-openjdk-11 && docker tag maven:3.8-openjdk-11 $MAVEN_IMAGE
-    - docker build -t $NODE-CHROME_IMAGE node-chrome
+    - docker build -t $NODE_CHROME_IMAGE node-chrome
     - docker push $MAVEN_IMAGE
-    - docker push $NODE-CHROME_IMAGE
+    - docker push $NODE_CHROME_IMAGE
   when: manual
 
 back:build:
@@ -44,7 +44,7 @@ back:build:
 
 front:build:
   stage: build
-  image: $NODE-CHROME_IMAGE
+  image: $NODE_CHROME_IMAGE
   tags:
     - build
   cache:
@@ -81,7 +81,7 @@ back:test:
 
 front:test:
   stage: check
-  image: $NODE-CHROME_IMAGE
+  image: $NODE_CHROME_IMAGE
   tags:
     - check
   needs:
