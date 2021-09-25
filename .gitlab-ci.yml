@@ -12,7 +12,7 @@ pull-images:
   stage: .pre
   image: docker:20.10
   tags:
-    - build
+    - ci
   services:
     - docker:20.10-dind
   before_script:
@@ -29,7 +29,7 @@ back:build:
   stage: build
   image: $MAVEN_IMAGE
   tags:
-    - build
+    - ci
   before_script:
     - cd game-backend
   script:
@@ -46,7 +46,7 @@ front:build:
   stage: build
   image: $NODE_CHROME_IMAGE
   tags:
-    - build
+    - ci
   cache:
     key:
       files:
@@ -63,7 +63,7 @@ back:test:
   stage: check
   image: $MAVEN_IMAGE
   tags:
-    - check
+    - ci
   needs:
     - back:build
   before_script:
@@ -83,7 +83,7 @@ front:test:
   stage: check
   image: $NODE_CHROME_IMAGE
   tags:
-    - check
+    - ci
   needs:
     - front:build
   before_script:
@@ -106,7 +106,7 @@ back:report:
   stage: report
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
   tags:
-    - check
+    - ci
   needs:
     - back:test
   before_script:
@@ -122,7 +122,7 @@ back:report:
 front:report:
   stage: report
   tags:
-    - check
+    - ci
   needs:
     - front:test
   script:
