@@ -4,6 +4,7 @@ stages:
   - deploy
 
 pull-images:
+  stage: .pre
   image: docker:20.10
   services:
     - docker:20.10-dind
@@ -18,8 +19,8 @@ pull-images:
   when: manual
 
 back:build:
-  image: $CI_REGISTRY/guillaumejchauveau/cpoo-project/maven:3.8-openjdk-11
   stage: build
+  image: $CI_REGISTRY/guillaumejchauveau/cpoo-project/maven:3.8-openjdk-11
   tags:
     - build
   before_script:
@@ -35,8 +36,8 @@ back:build:
     expire_in: 1 hour
 
 front:build:
-  image: registry.gitlab.inria.fr/diverse/docker/docker-image/insa-node:14.17.0
   stage: build
+  image: $CI_REGISTRY/guillaumejchauveau/cpoo-project/node-chrome:16
   tags:
     - build
   cache:
@@ -52,8 +53,8 @@ front:build:
     - npm run ng build -- --prod --build-optimizer
 
 back:test:
-  image: registry.gitlab.inria.fr/diverse/docker/docker-image/insa-maven:3.6.2-jdk-11
   stage: check
+  image: $CI_REGISTRY/guillaumejchauveau/cpoo-project/maven:3.8-openjdk-11
   tags:
     - check
   needs:
@@ -73,8 +74,8 @@ back:test:
     policy: pull
 
 front:test:
-  image: registry.gitlab.inria.fr/diverse/docker/docker-image/insa-node:14.17.0
   stage: check
+  image: $CI_REGISTRY/guillaumejchauveau/cpoo-project/node-chrome:16
   tags:
     - check
   needs:
