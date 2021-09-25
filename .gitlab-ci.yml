@@ -12,17 +12,19 @@ variables:
   BACK_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-backend:$CI_COMMIT_REF_SLUG"
   FRONT_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-frontend:$CI_COMMIT_REF_SLUG"
 
-pull-images:
-  stage: .pre
+.registry-job: &registry-job
   image: docker:20.10
   tags:
     - ci
   services:
     - docker:20.10-dind
   before_script:
-    - docker info
-  script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+pull-images:
+  <<: *registry-job
+  stage: .pre
+  script:
     - docker pull maven:3.8-openjdk-11 && docker tag maven:3.8-openjdk-11 $MAVEN_IMAGE
     - docker build -t $NODE_CHROME_IMAGE node-chrome
     - docker push $MAVEN_IMAGE
@@ -143,35 +145,21 @@ front:report:
       cobertura: game-frontend/coverage/cobertura.xml
 
 back:publish:
+  <<: *registry-job
   stage: publish
-  image: docker:20.10
-  tags:
-    - ci
-  services:
-    - docker:20.10-dind
   needs:
-    - back:build
-  before_script:
-    - cd game-backend
+    - back:test
   script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $BACK_IMAGE .
+    - docker build -t $BACK_IMAGE game-backend
     - docker push $BACK_IMAGE
 
 front:publish:
+  <<: *registry-job
   stage: publish
-  image: docker:20.10
-  tags:
-    - ci
-  services:
-    - docker:20.10-dind
   needs:
-    - front:build
-  before_script:
-    - cd game-frontend/dist/game-frontend
+    - front:test
   script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $FRONT_IMAGE .
+    - docker build -t $FRONT_IMAGE game-frontend/dist/game-frontend
     - docker push $FRONT_IMAGE
 
 review:
