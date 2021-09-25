@@ -4,20 +4,24 @@ stages:
   - staging
 
 build-back:
-  image: maven:3.6.2-jdk-11
+  image: registry.gitlab.inria.fr/diverse/docker/docker-image/insa-maven:3.6.2-jdk-11
   stage: build
   tags:
     - build
   script:
     - cd game-backend
-    - mvn clean package
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository clean package
+  cache:
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository/
+      - game-backend/target/
   artifacts:
     paths:
-      - game-backend/target/game-backend-1.3.0.jar
+      - game-backend/target/*.jar
     expire_in: 1 hour
 
 build-front:
-  image: node:14.17.0
+  image: registry.gitlab.inria.fr/diverse/docker/docker-image/insa-node:14.17.0
   stage: build
   tags:
     - build
