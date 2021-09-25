@@ -3,6 +3,10 @@ stages:
   - check
   - deploy
 
+variables:
+  MAVEN_IMAGE: $CI_REGISTRY/$CI_PROJECT_PATH/maven:3.8-openjdk-11
+  NODE-CHROME_IMAGE: $CI_REGISTRY/$CI_PROJECT_PATH/node-chrome:16
+
 pull-images:
   stage: .pre
   image: docker:20.10
@@ -12,15 +16,15 @@ pull-images:
     - docker info
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker pull maven:3.8-openjdk-11 && docker tag maven:3.8-openjdk-11 $CI_REGISTRY/guillaumejchauveau/cpoo-project/maven:3.8-openjdk-11
-    - docker build -t $CI_REGISTRY/guillaumejchauveau/cpoo-project/node-chrome:16 node-chrome
-    - docker push $CI_REGISTRY/guillaumejchauveau/cpoo-project/maven:3.8-openjdk-11
-    - docker push $CI_REGISTRY/guillaumejchauveau/cpoo-project/node-chrome:16
+    - docker pull maven:3.8-openjdk-11 && docker tag maven:3.8-openjdk-11 $MAVEN_IMAGE
+    - docker build -t $NODE-CHROME_IMAGE node-chrome
+    - docker push $MAVEN_IMAGE
+    - docker push $NODE-CHROME_IMAGE
   when: manual
 
 back:build:
   stage: build
-  image: $CI_REGISTRY/guillaumejchauveau/cpoo-project/maven:3.8-openjdk-11
+  image: $MAVEN_IMAGE
   tags:
     - build
   before_script:
@@ -37,7 +41,7 @@ back:build:
 
 front:build:
   stage: build
-  image: $CI_REGISTRY/guillaumejchauveau/cpoo-project/node-chrome:16
+  image: $NODE-CHROME_IMAGE
   tags:
     - build
   cache:
@@ -54,7 +58,7 @@ front:build:
 
 back:test:
   stage: check
-  image: $CI_REGISTRY/guillaumejchauveau/cpoo-project/maven:3.8-openjdk-11
+  image: $MAVEN_IMAGE
   tags:
     - check
   needs:
@@ -67,15 +71,31 @@ back:test:
     reports:
       junit:
         - game-backend/target/surefire-reports/TEST-*.xml
-      # TODO: coverage
+        - game-backend/target/site/jacoco/jacoco.xml
   cache:
     paths:
       - $CI_PROJECT_DIR/.m2/repository/
     policy: pull
 
+back:test-coverage:
+  stage: check
+  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+  tags:
+    - check
+  needs:
+    - back:test
+  before_script:
+    - cd game-backend
+  script:
+    # convert report from jacoco to cobertura, using relative project path
+    - python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java/ > target/site/cobertura.xml
+  artifacts:
+    reports:
+      cobertura: game-backend/target/site/cobertura.xml
+
 front:test:
   stage: check
-  image: $CI_REGISTRY/guillaumejchauveau/cpoo-project/node-chrome:16
+  image: $NODE-CHROME_IMAGE
   tags:
     - check
   needs:
@@ -85,8 +105,6 @@ front:test:
     - export CHROME_BIN=
   script:
     - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=junit
-    - ls -la
-  coverage: '/Statements\s+:\s\d+.\d+%/'
   artifacts:
     reports:
       junit:
@@ -100,8 +118,6 @@ front:test:
     paths:
       - game-frontend/node_modules/
     policy: pull
-
-#TODO: Linting
 
 review:
   stage: deploy
