@@ -36,7 +36,7 @@ module.exports = function (config) {
       reporters: [
         { type: 'html', subdir: 'report-html' },
         { type: 'text-summary', subdir: '.', file: 'text-summary.txt' },
-        { type: 'cobertura', subdir: '.', file: 'cobertura.txt' }
+        { type: 'cobertura', subdir: '.', file: 'cobertura.xml' }
       ]
     },
     reporters: ['progress', 'kjhtml'],

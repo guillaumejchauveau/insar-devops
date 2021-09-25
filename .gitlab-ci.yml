@@ -93,7 +93,7 @@ front:test:
   artifacts:
     paths:
       - game-frontend/tests/junit-test-results.xml
-      - game-frontend/coverage/cobertura.txt
+      - game-frontend/coverage/cobertura.xml
   cache:
     key:
       files:
@@ -130,7 +130,7 @@ front:report:
   artifacts:
     reports:
       junit: game-frontend/tests/junit-test-results.xml
-      cobertura: game-frontend/coverage/cobertura.txt
+      cobertura: game-frontend/coverage/cobertura.xml
 
 review:
   stage: deploy
