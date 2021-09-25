@@ -10,6 +10,8 @@ variables:
 pull-images:
   stage: .pre
   image: docker:20.10
+  tags:
+    - build
   services:
     - docker:20.10-dind
   before_script:
