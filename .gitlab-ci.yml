@@ -46,8 +46,6 @@ back:test:
     - back:build
   before_script:
     - cd game-backend
-    - ls -la
-    - ls -la target
   script:
     - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository verify
   artifacts:
@@ -82,6 +80,9 @@ front:test:
       cobertura:
         - game-frontend/converage/cobertura-coverage.xml
   cache:
+    key:
+      files:
+        - game-frontend/package-lock.json
     paths:
       - game-frontend/node_modules/
     policy: pull
