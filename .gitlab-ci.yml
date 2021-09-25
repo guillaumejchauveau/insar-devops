@@ -6,6 +6,8 @@ stages:
 build-back:
   image: maven:3.6.2-jdk-11
   stage: build
+  tags:
+    - build
   script:
     - cd game-backend
     - mvn clean package
@@ -17,6 +19,8 @@ build-back:
 build-front:
   image: node:14.17.0
   stage: build
+  tags:
+    - build
   cache:
     paths:
       - node_modules/
@@ -27,6 +31,8 @@ build-front:
 
 review:
   stage: review
+  tags:
+    - review
   script:
     - echo "review"
   environment:
@@ -39,6 +45,8 @@ review:
 
 staging:
   stage: staging
+  tags:
+    - staging
   script:
     - echo "staging"
   environment:
