@@ -11,7 +11,7 @@ back:build:
   before_script:
     - cd game-backend
   script:
-    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository package
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository compile
   cache:
     paths:
       - $CI_PROJECT_DIR/.m2/repository/
@@ -70,7 +70,7 @@ front:test:
     - export CHROME_BIN=
   script:
     - ls -la
-    - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=cobertura
+    - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=junit
     - ls -la
   coverage: '/Statements\s+:\s\d+.\d+%/'
   artifacts:
@@ -78,7 +78,7 @@ front:test:
       junit:
         - game-frontend/tests/junit-test-results.xml
       cobertura:
-        - game-frontend/converage/cobertura-coverage.xml
+        - game-frontend/coverage/cobertura.txt
   cache:
     key:
       files:
