@@ -1,54 +1,109 @@
 stages:
   - build
-  - review
-  - staging
+  - check
+  - deploy
 
-build-back:
+back:build:
   image: registry.gitlab.inria.fr/diverse/docker/docker-image/insa-maven:3.6.2-jdk-11
   stage: build
   tags:
     - build
-  script:
+  before_script:
     - cd game-backend
-    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository clean package
+  script:
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository package
   cache:
     paths:
       - $CI_PROJECT_DIR/.m2/repository/
-      - game-backend/target/
   artifacts:
     paths:
       - game-backend/target/*.jar
     expire_in: 1 hour
 
-build-front:
+front:build:
   image: registry.gitlab.inria.fr/diverse/docker/docker-image/insa-node:14.17.0
   stage: build
   tags:
     - build
   cache:
+    key:
+      files:
+        - game-frontend/package-lock.json
     paths:
-      - node_modules/
-  script:
+      - game-frontend/node_modules/
+  before_script:
     - cd game-frontend
+  script:
     - npm install
-    - npm run ng build --prod --build-optimizer
+    - npm run ng build -- --prod --build-optimizer
+
+back:test:
+  image: registry.gitlab.inria.fr/diverse/docker/docker-image/insa-maven:3.6.2-jdk-11
+  stage: check
+  tags:
+    - check
+  needs:
+    - back:build
+  before_script:
+    - cd game-backend
+    - ls -la
+    - ls -la target
+  script:
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository verify
+  artifacts:
+    reports:
+      junit:
+        - game-backend/target/surefire-reports/TEST-*.xml
+      # TODO: coverage
+  cache:
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository/
+    policy: pull
+
+front:test:
+  image: registry.gitlab.inria.fr/diverse/docker/docker-image/insa-node:14.17.0
+  stage: check
+  tags:
+    - check
+  needs:
+    - front:build
+  before_script:
+    - cd game-frontend
+    - export CHROME_BIN=
+  script:
+    - ls -la
+    - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=cobertura
+    - ls -la
+  coverage: '/Statements\s+:\s\d+.\d+%/'
+  artifacts:
+    reports:
+      junit:
+        - game-frontend/tests/junit-test-results.xml
+      cobertura:
+        - game-frontend/converage/cobertura-coverage.xml
+  cache:
+    paths:
+      - game-frontend/node_modules/
+    policy: pull
+
+#TODO: Linting
 
 review:
-  stage: review
+  stage: deploy
   tags:
     - review
   script:
     - echo "review"
   environment:
     name: review/$CI_BUILD_REF_NAME
-    url: http://$CI_BUILD_REF_SLUG.$KUBE_INGRESS_BASE_DOMAIN 
+    url: http://$CI_BUILD_REF_SLUG.$KUBE_INGRESS_BASE_DOMAIN
   only:
     - branches
   except:
     - master
 
 staging:
-  stage: staging
+  stage: deploy
   tags:
     - staging
   script:

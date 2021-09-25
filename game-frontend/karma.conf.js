@@ -10,7 +10,8 @@ module.exports = function (config) {
       require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
-      require('@angular-devkit/build-angular/plugins/karma')
+      require('@angular-devkit/build-angular/plugins/karma'),
+      require('karma-junit-reporter')
     ],
     client: {
       jasmine: {
@@ -24,13 +25,15 @@ module.exports = function (config) {
     jasmineHtmlReporter: {
       suppressAll: true // removes the duplicated traces
     },
+    junitReporter: {
+      outputDir: 'tests',
+      outputFile: 'junit-test-results.xml',
+      useBrowserName: false,
+    },
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/game-frontend'),
+      dir: 'coverage',
       subdir: '.',
-      reporters: [
-        { type: 'html' },
-        { type: 'text-summary' }
-      ]
+      reporters: ['html', 'text-summary', 'cobertura']
     },
     reporters: ['progress', 'kjhtml'],
     port: 9876,
@@ -38,7 +41,13 @@ module.exports = function (config) {
     logLevel: config.LOG_INFO,
     autoWatch: true,
     browsers: ['Chrome'],
+    customLaunchers: {
+      GitlabHeadlessChrome: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox'],
+      },
+    },
     singleRun: false,
     restartOnFileChange: true
-  });
-};
+  })
+}
