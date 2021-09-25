@@ -3,8 +3,22 @@ stages:
   - check
   - deploy
 
+pull-images:
+  image: docker:20.10
+  services:
+    - docker:20.10-dind
+  before_script:
+    - docker info
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull maven:3.8-openjdk-11 && docker tag maven:3.8-openjdk-11 $CI_REGISTRY/guillaumejchauveau/cpoo-project/maven:3.8-openjdk-11
+    - docker build -t $CI_REGISTRY/guillaumejchauveau/cpoo-project/node-chrome:16 node-chrome
+    - docker push $CI_REGISTRY/guillaumejchauveau/cpoo-project/maven:3.8-openjdk-11
+    - docker push $CI_REGISTRY/guillaumejchauveau/cpoo-project/node-chrome:16
+  when: manual
+
 back:build:
-  image: registry.gitlab.inria.fr/diverse/docker/docker-image/insa-maven:3.6.2-jdk-11
+  image: $CI_REGISTRY/guillaumejchauveau/cpoo-project/maven:3.8-openjdk-11
   stage: build
   tags:
     - build
@@ -47,7 +61,7 @@ back:test:
   before_script:
     - cd game-backend
   script:
-    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository verify
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository test
   artifacts:
     reports:
       junit:
@@ -69,7 +83,6 @@ front:test:
     - cd game-frontend
     - export CHROME_BIN=
   script:
-    - ls -la
     - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=junit
     - ls -la
   coverage: '/Statements\s+:\s\d+.\d+%/'
