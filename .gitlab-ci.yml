@@ -1,6 +1,7 @@
 stages:
   - build
   - check
+  - report
   - deploy
 
 variables:
@@ -70,30 +71,13 @@ back:test:
   script:
     - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository test
   artifacts:
-    reports:
-      junit:
-        - game-backend/target/surefire-reports/TEST-*.xml
-        - game-backend/target/site/jacoco/jacoco.xml
+    paths:
+      - game-backend/target/surefire-reports/TEST-*.xml
+      - game-backend/target/site/jacoco/jacoco.xml
   cache:
     paths:
       - $CI_PROJECT_DIR/.m2/repository/
     policy: pull
-
-back:test-coverage:
-  stage: check
-  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
-  tags:
-    - check
-  needs:
-    - back:test
-  before_script:
-    - cd game-backend
-  script:
-    # convert report from jacoco to cobertura, using relative project path
-    - python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java/ > target/site/cobertura.xml
-  artifacts:
-    reports:
-      cobertura: game-backend/target/site/cobertura.xml
 
 front:test:
   stage: check
@@ -108,11 +92,9 @@ front:test:
   script:
     - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=junit
   artifacts:
-    reports:
-      junit:
-        - game-frontend/tests/junit-test-results.xml
-      cobertura:
-        - game-frontend/coverage/cobertura.txt
+    paths:
+      - game-frontend/tests/junit-test-results.xml
+      - game-frontend/coverage/cobertura.txt
   cache:
     key:
       files:
@@ -120,6 +102,34 @@ front:test:
     paths:
       - game-frontend/node_modules/
     policy: pull
+
+back:report:
+  stage: report
+  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+  tags:
+    - check
+  needs:
+    - back:test
+  before_script:
+    - cd game-backend
+  script:
+    # convert report from jacoco to cobertura, using relative project path
+    - python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java/ > target/site/cobertura.xml
+  artifacts:
+    reports:
+      junit: game-backend/target/surefire-reports/TEST-*.xml
+      cobertura: game-backend/target/site/cobertura.xml
+
+front:report:
+  stage: report
+  tags:
+    - check
+  needs:
+    - front:test
+  artifacts:
+    reports:
+      junit: game-frontend/tests/junit-test-results.xml
+      cobertura: game-frontend/coverage/cobertura.txt
 
 review:
   stage: deploy
