@@ -5,8 +5,8 @@ stages:
   - deploy
 
 variables:
-  MAVEN_IMAGE: $CI_REGISTRY/$CI_PROJECT_PATH/maven:3.8-openjdk-11
-  NODE-CHROME_IMAGE: $CI_REGISTRY/$CI_PROJECT_PATH/node-chrome:16
+  MAVEN_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/maven:3.8-openjdk-11"
+  NODE-CHROME_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/node-chrome:16"
 
 pull-images:
   stage: .pre
