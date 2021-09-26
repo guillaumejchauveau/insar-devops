@@ -1,5 +1,3 @@
-include: /.gitlab-ci.common.yml
-
 back:build:
   stage: build
   image: $MAVEN_IMAGE
@@ -53,15 +51,3 @@ back:report:
     reports:
       junit: game-backend/target/surefire-reports/TEST-*.xml
       cobertura: game-backend/target/site/cobertura.xml
-
-back:publish:
-  <<: *registry-job
-  stage: publish
-  needs:
-    - job: back:test
-      artifacts: false
-    - job: back:build
-      artifacts: true
-  script:
-    - docker build --pull -t "$BACK_IMAGE${tag}" game-backend
-    - docker push "$BACK_IMAGE${tag}"

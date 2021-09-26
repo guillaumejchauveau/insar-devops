@@ -1,5 +1,3 @@
-include: /.gitlab-ci.common.yml
-
 front:build:
   stage: build
   image: $NODE_CHROME_IMAGE
@@ -57,15 +55,3 @@ front:report:
     reports:
       junit: game-frontend/tests/junit-test-results.xml
       cobertura: game-frontend/coverage/cobertura.xml
-
-front:publish:
-  <<: *registry-job
-  stage: publish
-  needs:
-    - job: front:test
-      artifacts: false
-    - job: front:build
-      artifacts: true
-  script:
-    - docker build --pull -t "$FRONT_IMAGE${tag}" game-frontend
-    - docker push "$FRONT_IMAGE${tag}"

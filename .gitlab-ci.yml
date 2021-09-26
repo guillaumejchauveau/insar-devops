@@ -7,7 +7,6 @@ stages:
   - cleanup
 
 include:
-  - /.gitlab-ci.common.yml
   - /.gitlab-ci.back.yml
   - /.gitlab-ci.front.yml
 
@@ -17,15 +16,56 @@ variables:
   BACK_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-backend"
   FRONT_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-frontend"
 
+.registry-job: &registry-job
+  image: docker:20.10
+  tags:
+    - ci
+  services:
+    - docker:20.10-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag=""
+        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
+      else
+        tag=":$CI_COMMIT_REF_SLUG"
+        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      fi
+
 pull-images:
   <<: *registry-job
   stage: .pre
   script:
     - docker pull maven:3.8-openjdk-11 && docker tag maven:3.8-openjdk-11 $MAVEN_IMAGE
-    - docker build -t $NODE_CHROME_IMAGE node-chrome
+    - docker build --pull -t $NODE_CHROME_IMAGE node-chrome
     - docker push $MAVEN_IMAGE
     - docker push $NODE_CHROME_IMAGE
   when: manual
+
+back:publish:
+  <<: *registry-job
+  stage: publish
+  needs:
+    - job: back:test
+      artifacts: false
+    - job: back:build
+      artifacts: true
+  script:
+    - docker build --pull -t "$BACK_IMAGE${tag}" game-backend
+    - docker push "$BACK_IMAGE${tag}"
+
+front:publish:
+  <<: *registry-job
+  stage: publish
+  needs:
+    - job: front:test
+      artifacts: false
+    - job: front:build
+      artifacts: true
+  script:
+    - docker build --pull -t "$FRONT_IMAGE${tag}" game-frontend
+    - docker push "$FRONT_IMAGE${tag}"
 
 review:
   stage: deploy
