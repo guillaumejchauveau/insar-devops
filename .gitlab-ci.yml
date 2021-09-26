@@ -6,20 +6,16 @@ stages:
   - deploy
   - cleanup
 
+include:
+  - /.gitlab-ci.common.yml
+  - /.gitlab-ci.back.yml
+  - /.gitlab-ci.front.yml
+
 variables:
   MAVEN_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/maven:3.8-openjdk-11"
   NODE_CHROME_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/node-chrome:16"
-  BACK_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-backend:$CI_COMMIT_REF_SLUG"
-  FRONT_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-frontend:$CI_COMMIT_REF_SLUG"
-
-.registry-job: &registry-job
-  image: docker:20.10
-  tags:
-    - ci
-  services:
-    - docker:20.10-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  BACK_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-backend"
+  FRONT_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-frontend"
 
 pull-images:
   <<: *registry-job
@@ -30,137 +26,6 @@ pull-images:
     - docker push $MAVEN_IMAGE
     - docker push $NODE_CHROME_IMAGE
   when: manual
-
-back:build:
-  stage: build
-  image: $MAVEN_IMAGE
-  tags:
-    - ci
-  before_script:
-    - cd game-backend
-  script:
-    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository compile
-  artifacts:
-    paths:
-      - game-backend/target/*.jar
-    expire_in: 1 hour
-  cache:
-    paths:
-      - $CI_PROJECT_DIR/.m2/repository/
-
-front:build:
-  stage: build
-  image: $NODE_CHROME_IMAGE
-  tags:
-    - ci
-  before_script:
-    - cd game-frontend
-  script:
-    - npm install
-    - npm run ng build -- --prod --build-optimizer
-    - cp Dockerfile dist/game-frontend/
-  artifacts:
-    paths:
-      - game-frontend/dist/game-frontend/*
-  cache:
-    key:
-      files:
-        - game-frontend/package-lock.json
-    paths:
-      - game-frontend/node_modules/
-
-back:test:
-  stage: check
-  image: $MAVEN_IMAGE
-  tags:
-    - ci
-  needs:
-    - back:build
-  before_script:
-    - cd game-backend
-  script:
-    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository test
-  artifacts:
-    paths:
-      - game-backend/target/surefire-reports/TEST-*.xml
-      - game-backend/target/site/jacoco/jacoco.xml
-  cache:
-    paths:
-      - $CI_PROJECT_DIR/.m2/repository/
-    policy: pull
-
-front:test:
-  stage: check
-  image: $NODE_CHROME_IMAGE
-  tags:
-    - ci
-  needs:
-    - front:build
-  before_script:
-    - cd game-frontend
-  script:
-    - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=junit
-  artifacts:
-    paths:
-      - game-frontend/tests/junit-test-results.xml
-      - game-frontend/coverage/cobertura.xml
-  cache:
-    key:
-      files:
-        - game-frontend/package-lock.json
-    paths:
-      - game-frontend/node_modules/
-    policy: pull
-
-back:report:
-  stage: report
-  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
-  tags:
-    - ci
-  needs:
-    - back:test
-  before_script:
-    - cd game-backend
-  script:
-    # convert report from jacoco to cobertura, using relative project path
-    - python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java/ > target/site/cobertura.xml
-  artifacts:
-    reports:
-      junit: game-backend/target/surefire-reports/TEST-*.xml
-      cobertura: game-backend/target/site/cobertura.xml
-
-front:report:
-  stage: report
-  tags:
-    - ci
-  needs:
-    - front:test
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - cd game-frontend
-  artifacts:
-    reports:
-      junit: game-frontend/tests/junit-test-results.xml
-      cobertura: game-frontend/coverage/cobertura.xml
-
-back:publish:
-  <<: *registry-job
-  stage: publish
-  needs:
-    - back:test
-  script:
-    - docker build -t $BACK_IMAGE game-backend
-    - docker push $BACK_IMAGE
-
-front:publish:
-  <<: *registry-job
-  stage: publish
-  needs:
-    - front:test
-  script:
-    - docker build -t $FRONT_IMAGE game-frontend/dist/game-frontend
-    - docker push $FRONT_IMAGE
 
 review:
   stage: deploy

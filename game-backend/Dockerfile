@@ -1,5 +1,7 @@
 FROM openjdk:11-jre
 
-COPY target/game-backend-1.3.0.jar /usr/src/game/
+EXPOSE 4444
 
-CMD ["java","-jar","/usr/src/game/game-backend-1.3.0.jar", "http://0.0.0.0:4444/"]
+COPY target/game-backend-*.jar /usr/src/game/game-backend.jar
+
+CMD ["java","-jar","/usr/src/game/game-backend.jar", "http://0.0.0.0:4444/"]

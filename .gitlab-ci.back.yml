@@ -1,0 +1,67 @@
+include: /.gitlab-ci.common.yml
+
+back:build:
+  stage: build
+  image: $MAVEN_IMAGE
+  tags:
+    - ci
+  before_script:
+    - cd game-backend
+  script:
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository compile
+  artifacts:
+    paths:
+      - game-backend/target/*.jar
+    expire_in: 1 hour
+  cache:
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository/
+
+back:test:
+  stage: check
+  image: $MAVEN_IMAGE
+  tags:
+    - ci
+  needs:
+    - back:build
+  before_script:
+    - cd game-backend
+  script:
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository test
+  artifacts:
+    paths:
+      - game-backend/target/surefire-reports/TEST-*.xml
+      - game-backend/target/site/jacoco/jacoco.xml
+  cache:
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository/
+    policy: pull
+
+back:report:
+  stage: report
+  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+  tags:
+    - ci
+  needs:
+    - back:test
+  before_script:
+    - cd game-backend
+  script:
+    # convert report from jacoco to cobertura, using relative project path
+    - python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java/ > target/site/cobertura.xml
+  artifacts:
+    reports:
+      junit: game-backend/target/surefire-reports/TEST-*.xml
+      cobertura: game-backend/target/site/cobertura.xml
+
+back:publish:
+  <<: *registry-job
+  stage: publish
+  needs:
+    - job: back:test
+      artifacts: false
+    - job: back:build
+      artifacts: true
+  script:
+    - docker build --pull -t "$BACK_IMAGE${tag}" game-backend
+    - docker push "$BACK_IMAGE${tag}"

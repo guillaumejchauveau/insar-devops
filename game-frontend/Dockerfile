@@ -1,6 +1,6 @@
 FROM nginx:alpine
 
-COPY . /usr/share/nginx/html
+COPY dist/game-frontend /usr/share/nginx/html
 
 RUN echo 'server {\
   listen 80;\
