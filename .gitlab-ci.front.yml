@@ -11,6 +11,7 @@ front:build:
   artifacts:
     paths:
       - game-frontend/dist/game-frontend/*
+    expire_in: 1 hour
   cache:
     key:
       files:

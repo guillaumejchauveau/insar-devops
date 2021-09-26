@@ -52,7 +52,9 @@ back:publish:
     - job: back:build
       artifacts: true
   script:
-    - docker build --pull -t "$BACK_IMAGE${tag}" game-backend
+    - ls -la game-backend
+    - ls -la game-backend/target
+    - docker build -t "$BACK_IMAGE${tag}" game-backend
     - docker push "$BACK_IMAGE${tag}"
 
 front:publish:
@@ -64,7 +66,7 @@ front:publish:
     - job: front:build
       artifacts: true
   script:
-    - docker build --pull -t "$FRONT_IMAGE${tag}" game-frontend
+    - docker build -t "$FRONT_IMAGE${tag}" game-frontend
     - docker push "$FRONT_IMAGE${tag}"
 
 review:
