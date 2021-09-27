@@ -62,6 +62,7 @@ back:publish:
     - job: back:build
       artifacts: true
   script:
+    - ls -la game-backend/target
     - docker build -t "$BACK_IMAGE${tag}" game-backend
     - docker push "$BACK_IMAGE${tag}"
 
