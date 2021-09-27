@@ -3,12 +3,14 @@ stages:
   - check
   - report
   - publish
-  - deploy
+  - review
   - cleanup
+  - staging
 
 include:
   - /.gitlab-ci.back.yml
-  - /.gitlab-ci.front.yml
+  - /.gitlab-ci.front.
+  - template: Jobs/Deploy.gitlab-ci.yml
 
 variables:
   MAVEN_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/maven:3.8-openjdk-11"
@@ -16,7 +18,7 @@ variables:
   BACK_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-backend"
   FRONT_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-frontend"
 
-.registry-job: &registry-job
+.registry-job:
   image: docker:20.10
   tags:
     - ci
@@ -34,7 +36,7 @@ variables:
       fi
 
 pull-images:
-  <<: *registry-job
+  extends: .registry-job
   stage: .pre
   script:
     - docker pull maven:3.8-openjdk-11 && docker tag maven:3.8-openjdk-11 $MAVEN_IMAGE
@@ -44,7 +46,7 @@ pull-images:
   when: manual
 
 back:publish:
-  <<: *registry-job
+  extends: .registry-job
   stage: publish
   needs:
     - job: back:test
@@ -52,13 +54,11 @@ back:publish:
     - job: back:build
       artifacts: true
   script:
-    - ls -la game-backend
-    - ls -la game-backend/target
     - docker build -t "$BACK_IMAGE${tag}" game-backend
     - docker push "$BACK_IMAGE${tag}"
 
 front:publish:
-  <<: *registry-job
+  extends: .registry-job
   stage: publish
   needs:
     - job: front:test
@@ -68,80 +68,3 @@ front:publish:
   script:
     - docker build -t "$FRONT_IMAGE${tag}" game-frontend
     - docker push "$FRONT_IMAGE${tag}"
-
-review:
-  stage: deploy
-  tags:
-    - review
-  script:
-    - echo "review"
-    #- check_kube_domain
-    #- install_dependencies
-    #- download_chart
-    #- ensure_namespace
-    #- initialize_tiller
-    #- create_secret
-    #- deploy
-  #- persist_environment_url
-  environment:
-    name: review/$CI_COMMIT_REF_NAME
-    url: http://$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG.$AUTO_DEVOPS_DOMAIN
-    on_stop: stop_review
-  artifacts:
-    paths: [environment_url.txt]
-  only:
-    refs:
-      - branches
-    kubernetes: active
-  except:
-    refs:
-      - master
-    variables:
-      - $REVIEW_DISABLED
-
-stop_review:
-  stage: cleanup
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - echo "stop_review"
-    #- install_dependencies
-    #- initialize_tiller
-    #- delete
-  environment:
-    name: review/$CI_COMMIT_REF_NAME
-    action: stop
-  when: manual
-  allow_failure: true
-  only:
-    refs:
-      - branches
-    kubernetes: active
-  except:
-    refs:
-      - master
-    variables:
-      - $REVIEW_DISABLED
-
-staging:
-  stage: deploy
-  tags:
-    - staging
-  script:
-    - echo "staging"
-    #- check_kube_domain
-    #- install_dependencies
-    #- download_chart
-    #- ensure_namespace
-    #- initialize_tiller
-    #- create_secret
-    #- deploy
-  environment:
-    name: staging
-    url: http://$CI_PROJECT_PATH_SLUG-staging.$AUTO_DEVOPS_DOMAIN
-  only:
-    refs:
-      - master
-    kubernetes: active
-    variables:
-      - $STAGING_ENABLED
