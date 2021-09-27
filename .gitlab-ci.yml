@@ -6,10 +6,18 @@ stages:
   - review
   - cleanup
   - staging
+  # Following stages are required by AutoDeploy template but are not used.
+  - canary
+  - production
+  - incremental rollout 10%
+  - incremental rollout 25%
+  - incremental rollout 50%
+  - incremental rollout 100%
+
 
 include:
   - /.gitlab-ci.back.yml
-  - /.gitlab-ci.front.
+  - /.gitlab-ci.front.yml
   - template: Jobs/Deploy.gitlab-ci.yml
 
 variables:
