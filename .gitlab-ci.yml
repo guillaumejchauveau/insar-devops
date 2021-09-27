@@ -43,7 +43,7 @@ variables:
         echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
       fi
 
-pull-images:
+register-images:
   extends: .registry-job
   stage: .pre
   script:
@@ -62,7 +62,6 @@ back:publish:
     - job: back:build
       artifacts: true
   script:
-    - ls -la game-backend/target
     - docker build -t "$BACK_IMAGE${tag}" game-backend
     - docker push "$BACK_IMAGE${tag}"
 
@@ -85,3 +84,16 @@ review:
 staging:
   tags:
     - staging
+
+rollout 10%:
+  rules:
+    - when: never
+rollout 25%:
+  rules:
+    - when: never
+rollout 50%:
+  rules:
+    - when: never
+rollout 100%:
+  rules:
+    - when: never
