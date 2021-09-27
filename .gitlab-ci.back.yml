@@ -6,7 +6,7 @@ back:build:
   before_script:
     - cd game-backend
   script:
-    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository compile
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository package
   artifacts:
     paths:
       - game-backend/target/*.jar
