@@ -77,3 +77,11 @@ front:publish:
   script:
     - docker build -t "$FRONT_IMAGE${tag}" game-frontend
     - docker push "$FRONT_IMAGE${tag}"
+
+review:
+  tags:
+    - review
+
+staging:
+  tags:
+    - staging
