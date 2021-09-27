@@ -4,7 +4,7 @@
 replicaCount: 1
 strategyType:
 image:
-  repository: gitlab.example.com/group/project
+  repository: gitlab.insa-rennes.fr/guillaumejchauveau/cpoo-project
   tag: stable
   pullPolicy: IfNotPresent
   secrets:
