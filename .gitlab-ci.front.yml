@@ -48,6 +48,7 @@ front:report:
     - ci
   needs:
     - front:test
+  when: always
   variables:
     GIT_STRATEGY: none
   script:

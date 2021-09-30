@@ -42,6 +42,7 @@ back:report:
     - ci
   needs:
     - back:test
+  when: always
   before_script:
     - cd game-backend
   script:
