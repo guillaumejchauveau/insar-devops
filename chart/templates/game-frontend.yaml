@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "appname" . }}
+  annotations:
+    {{ if .Values.gitlab.app }}app.gitlab.com/app: {{ .Values.gitlab.app | quote }}{{ end }}
+    {{ if .Values.gitlab.env }}app.gitlab.com/env: {{ .Values.gitlab.env | quote }}{{ end }}
+  labels:
+{{ include "sharedlabels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "appname" . }}
+      release: {{ .Release.Name }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      annotations:
+        {{ if .Values.gitlab.app }}app.gitlab.com/app: {{ .Values.gitlab.app | quote }}{{ end }}
+        {{ if .Values.gitlab.env }}app.gitlab.com/env: {{ .Values.gitlab.env | quote }}{{ end }}
+      labels:
+{{ include "sharedlabels" . | indent 8 }}
+    spec:
+      imagePullSecrets:
+{{ toYaml .Values.image.secrets | indent 10 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ template "imagename" .Values.front.image }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: GITLAB_ENVIRONMENT_NAME
+              value: {{ .Values.gitlab.envName | quote }}
+            - name: GITLAB_ENVIRONMENT_URL
+              value: {{ .Values.gitlab.envURL | quote }}
+          ports:
+            - name: "{{ .Values.front.name }}"
+              containerPort: {{ .Values.front.internalPort }}
+          livenessProbe:
+            httpGet:
+              path: "/"
+              scheme: "HTTP"
+              port: {{ .Values.front.internalPort }}
+            initialDelaySeconds: 15
+            timeoutSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: "/"
+              scheme: "HTTP"
+              port: {{ .Values.front.internalPort }}
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "fullname" . }}
+  annotations:
+{{- if .Values.prometheus.metrics }}
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.front.internalPort }}"
+{{- end }}
+  labels:
+{{ include "sharedlabels" . | indent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.front.externalPort }}
+    targetPort: {{ .Values.front.internalPort }}
+    protocol: TCP
+    name: {{ .Values.front.name }}
+  selector:
+    app: {{ template "appname" . }}

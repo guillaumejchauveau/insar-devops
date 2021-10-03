@@ -29,8 +29,9 @@ front:test:
   before_script:
     - cd game-frontend
   script:
-    - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=junit
+    - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=progress,junit
   artifacts:
+    when: always
     paths:
       - game-frontend/tests/junit-test-results.xml
       - game-frontend/coverage/cobertura.xml

@@ -1,0 +1,11 @@
+<div class="map">
+    <ng-container *ngFor="let row of tiles; index as y">
+      <ng-container *ngFor="let tile of row; index as x">
+        <img
+             class='tile'
+             [attr.data-x]=x
+             [attr.data-y]=y
+             [src]="'assets/' + tile + '.svg'">
+      </ng-container>
+    </ng-container>
+</div>
