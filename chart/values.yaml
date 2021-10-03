@@ -1,0 +1,19 @@
+replicaCount: 1
+front:
+  name: "frontend"
+  url: "http://localhost"
+  externalPort: 8080
+  internalPort: 80
+  image:
+    name: "localhost:5000/cpoo-frontend"
+    tag: ""
+image:
+  pullPolicy:
+  secrets:
+prometheus:
+  metrics: true
+gitlab:
+  app:
+  env:
+  envName:
+  envURL:

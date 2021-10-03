@@ -1,0 +1,38 @@
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+apiVersion: networking.k8s.io/v1
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1/Ingress"}}
+apiVersion: networking.k8s.io/v1beta1
+{{ else }}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+{{ include "sharedlabels" . | indent 4 }}
+  annotations:
+    {{- if .Values.prometheus.metrics }}
+    nginx.ingress.kubernetes.io/server-snippet: |-
+      location /metrics {
+          deny all;
+      }
+    {{- end }}
+spec:
+  rules:
+    - host: {{ template "hostname" .Values.front.url }}
+      http:
+        paths:
+          - path: "/"
+            {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+            pathType: Prefix
+            {{- end }}
+            backend:
+              {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+              service:
+                name: {{ template "fullname" . }}
+                port:
+                  number: {{ .Values.front.externalPort }}
+              {{ else }}
+              serviceName: {{ template "fullname" . }}
+              servicePort: {{ .Values.front.externalPort }}
+              {{- end }}

@@ -27,6 +27,7 @@ back:test:
   script:
     - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository test
   artifacts:
+    when: always
     paths:
       - game-backend/target/surefire-reports/TEST-*.xml
       - game-backend/target/site/jacoco/jacoco.xml

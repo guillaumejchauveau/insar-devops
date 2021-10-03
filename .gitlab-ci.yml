@@ -6,94 +6,206 @@ stages:
   - review
   - cleanup
   - staging
-  # Following stages are required by AutoDeploy template but are not used.
-  - canary
-  - production
-  - incremental rollout 10%
-  - incremental rollout 25%
-  - incremental rollout 50%
-  - incremental rollout 100%
-
 
 include:
   - /.gitlab-ci.back.yml
   - /.gitlab-ci.front.yml
-  - template: Jobs/Deploy.gitlab-ci.yml
 
 variables:
   MAVEN_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/maven:3.8-openjdk-11"
   NODE_CHROME_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/node-chrome:16"
-  BACK_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-backend"
-  FRONT_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/game-frontend"
+  ALPINE_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/alpine:3"
+  DOCKER_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/docker:20.10"
+  DOCKER_DIND_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/docker:20.10-dind"
+  AUTO_DEPLOY_IMAGE_VERSION: 'v2.12.0'
 
-.registry-job:
-  image: docker:20.10
-  tags:
-    - ci
-  services:
-    - docker:20.10-dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - |
-      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        tag=""
-        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
-      else
-        tag=":$CI_COMMIT_REF_SLUG"
-        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
-      fi
+image: $ALPINE_IMAGE
+
+.docker-login-script: &docker-login-script
+  - |
+    if [[ -n "$CI_REGISTRY" && -n "$CI_REGISTRY_USER" ]]; then
+      echo "Logging in to GitLab Container Registry with CI credentials..."
+      echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    fi
 
 register-images:
-  extends: .registry-job
+  image: docker:20.10
+  services:
+    - docker:20.10-dind
+  tags:
+    - ci
   stage: .pre
   script:
+    - *docker-login-script
+    - docker pull alpine:3 && docker tag alpine:3 $ALPINE_IMAGE
+    - docker push $ALPINE_IMAGE
+    - docker pull docker:20.10 && docker tag docker:20.10 $DOCKER_IMAGE
+    - docker push $DOCKER_IMAGE
+    - docker pull docker:20.10-dind && docker tag docker:20.10-dind $DOCKER_DIND_IMAGE
+    - docker push $DOCKER_DIND_IMAGE
     - docker pull maven:3.8-openjdk-11 && docker tag maven:3.8-openjdk-11 $MAVEN_IMAGE
-    - docker build --pull -t $NODE_CHROME_IMAGE node-chrome
     - docker push $MAVEN_IMAGE
+    - docker build --pull -t $NODE_CHROME_IMAGE node-chrome
     - docker push $NODE_CHROME_IMAGE
   when: manual
 
-back:publish:
-  extends: .registry-job
+.image-vars-script: &image-vars-script
+  - |
+    if [[ -z "$CI_COMMIT_TAG" ]]; then
+      export BACKEND_IMAGE=$CI_REGISTRY_IMAGE/backend/$CI_COMMIT_REF_SLUG
+      export FRONTEND_IMAGE=$CI_REGISTRY_IMAGE/frontend/$CI_COMMIT_REF_SLUG
+      export IMAGE_TAG=$CI_COMMIT_SHA
+    else
+      export BACKEND_IMAGE=$CI_REGISTRY_IMAGE/backend
+      export FRONTEND_IMAGE=$CI_REGISTRY_IMAGE/frontend
+      export IMAGE_TAG=$CI_COMMIT_TAG
+    fi
+
+.publish-job:
+  image: $DOCKER_IMAGE
+  services:
+    - $DOCKER_DIND_IMAGE
+  tags:
+    - ci
   stage: publish
+  before_script:
+    - *docker-login-script
+    - *image-vars-script
+
+.publish-script: &publish-script
+  - |
+    image_previous="$IMAGE:$CI_COMMIT_BEFORE_SHA"
+    image_tagged="$IMAGE:$IMAGE_TAG"
+    image_latest="$IMAGE:latest"
+  - docker pull "$image_previous" || true
+  - docker pull "$image_latest" || true
+  - |
+    docker build \
+    --cache-from "$image_previous" --cache-from "$image_latest" \
+    --tag "$image_tagged" \
+    --tag "$image_latest" \
+    .
+  - docker push "$image_tagged"
+  - docker push "$image_latest"
+
+back:publish:
+  extends: .publish-job
   needs:
     - job: back:test
       artifacts: false
     - job: back:build
       artifacts: true
   script:
-    - docker build -t "$BACK_IMAGE${tag}" game-backend
-    - docker push "$BACK_IMAGE${tag}"
+    - IMAGE=$BACKEND_IMAGE
+    - cd game-backend
+    - *publish-script
 
 front:publish:
-  extends: .registry-job
-  stage: publish
+  extends: .publish-job
   needs:
     - job: front:test
       artifacts: false
     - job: front:build
       artifacts: true
   script:
-    - docker build -t "$FRONT_IMAGE${tag}" game-frontend
-    - docker push "$FRONT_IMAGE${tag}"
+    - IMAGE=$FRONTEND_IMAGE
+    - cd game-frontend
+    - *publish-script
+
+.deploy-job:
+  image: "registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:${AUTO_DEPLOY_IMAGE_VERSION}"
+  dependencies: []
+
+.deploy-script: &deploy-script
+  - auto-deploy check_kube_domain
+  - auto-deploy ensure_namespace
+  - auto-deploy create_secret
+  - *image-vars-script
+  - |
+    helm upgrade --install \
+    --wait \
+    --set image.secrets[0].name="gitlab-registry-${CI_PROJECT_PATH_SLUG}" \
+    --set gitlab.app="$CI_PROJECT_PATH_SLUG" \
+    --set gitlab.env="$CI_ENVIRONMENT_SLUG" \
+    --set gitlab.envName="$CI_ENVIRONMENT_NAME" \
+    --set gitlab.envURL="$CI_ENVIRONMENT_URL" \
+    --set releaseOverride="$RELEASE_NAME" \
+    --set front.url="$CI_ENVIRONMENT_URL" \
+    --set front.image.name="$FRONTEND_IMAGE" \
+    --set-string front.image.tag="$IMAGE_TAG" \
+    --namespace="$KUBE_NAMESPACE" \
+    "$CI_ENVIRONMENT_SLUG" \
+    chart/
 
 review:
   tags:
     - review
+  extends: .deploy-job
+  stage: review
+  script:
+    - *deploy-script
+    - auto-deploy persist_environment_url
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: http://$CI_PROJECT_ID-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    on_stop: stop_review
+  artifacts:
+    paths: [environment_url.txt]
+    when: always
+  rules:
+    - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: never
+    - if: '$REVIEW_DISABLED'
+      when: never
+    - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH'
+
+stop_review:
+  tags:
+    - review
+  extends: .deploy-job
+  stage: cleanup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - |
+      if [[ -n "$(helm ls --namespace "$KUBE_NAMESPACE" -q -f "^$CI_ENVIRONMENT_SLUG$" --failed --pending --deployed)" ]]; then
+        helm delete "$CI_ENVIRONMENT_SLUG" --namespace "$KUBE_NAMESPACE"
+      fi
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
+  allow_failure: true
+  rules:
+    - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: never
+    - if: '$REVIEW_DISABLED'
+      when: never
+    - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH'
+      when: manual
+
+# Staging deploys are disabled by default since
+# continuous deployment to production is enabled by default
+# If you prefer to automatically deploy to staging and
+# only manually promote to production, enable this job by setting
+# STAGING_ENABLED.
 
 staging:
   tags:
     - staging
-
-rollout 10%:
+  extends: .deploy-job
+  stage: staging
+  script:
+    - *deploy-script
+  environment:
+    name: staging
+    url: http://$CI_PROJECT_PATH_SLUG-staging.$KUBE_INGRESS_BASE_DOMAIN
   rules:
-    - when: never
-rollout 25%:
-  rules:
-    - when: never
-rollout 50%:
-  rules:
-    - when: never
-rollout 100%:
-  rules:
-    - when: never
+    - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
+      when: never
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+      when: never
+    - if: '$STAGING_ENABLED'
