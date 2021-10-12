@@ -9,6 +9,7 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Assertions;
 
 public class TestGameResource {
 	static {
@@ -36,17 +37,10 @@ public class TestGameResource {
 	void testGetNames(final Client client, final URI baseUri) {
 		final Response res = client
 			.target(baseUri)
-			.path("foo/bar")
+			.path("/")
 			.request()
 			.get();
-
-//		assertEquals(Response.Status.OK.getStatusCode(), res.getStatus());
-
-//		final List<String> names = res.readEntity(new GenericType<>() {});
-//		assertNotNull(names);
-//		assertEquals(2, names.size());
-//		assertEquals(names.get(0), "map1");
-//		assertEquals(names.get(1), "map2");
+		// Assertions.assertEquals(res.getStatus(), Response.Status.OK.getStatusCode());
 	}
 }
 

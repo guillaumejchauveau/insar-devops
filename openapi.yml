@@ -1,0 +1,10 @@
+openapi: "3.0.0"
+info:
+  version: "1.0.0"
+  title: "CPOO project API"
+paths:
+  /:
+    get:
+      responses:
+        404:
+          description: API is currently undefined
