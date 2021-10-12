@@ -6,7 +6,7 @@ back:build:
   before_script:
     - cd game-backend
   script:
-    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository package
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -DskipTests -Dmaven.test.skip=true clean package
   artifacts:
     paths:
       - game-backend/target/*.jar
@@ -15,7 +15,7 @@ back:build:
     paths:
       - $CI_PROJECT_DIR/.m2/repository/
 
-back:test:
+back:verify:
   stage: check
   image: $MAVEN_IMAGE
   tags:
@@ -25,16 +25,41 @@ back:test:
   before_script:
     - cd game-backend
   script:
-    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository test
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository verify
   artifacts:
     when: always
+    reports:
+      junit: game-backend/target/surefire-reports/TEST-*.xml
     paths:
-      - game-backend/target/surefire-reports/TEST-*.xml
       - game-backend/target/site/jacoco/jacoco.xml
   cache:
     paths:
       - $CI_PROJECT_DIR/.m2/repository/
     policy: pull
+
+back:integration_test:
+  stage: check
+  image: $OPENJDK_SCHEMATHESIS_IMAGE
+  tags:
+    - ci
+  needs:
+    - back:build
+    - api:build
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - java -cp game-backend/target/game-backend-* game.Main http://0.0.0.0:4444/ &
+    - sleep 2
+    - |
+      schemathesis run \
+      --checks all \
+      --base-url=http://localhost:4444 \
+      --junit-xml=schemathesis.xml \
+      ./openapi.json
+  artifacts:
+    when: always
+    reports:
+      junit: schemathesis.xml
 
 back:report:
   stage: report
@@ -42,7 +67,7 @@ back:report:
   tags:
     - ci
   needs:
-    - back:test
+    - back:verify
   when: always
   before_script:
     - cd game-backend
@@ -51,5 +76,4 @@ back:report:
     - python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java/ > target/site/cobertura.xml
   artifacts:
     reports:
-      junit: game-backend/target/surefire-reports/TEST-*.xml
       cobertura: game-backend/target/site/cobertura.xml

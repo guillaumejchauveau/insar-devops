@@ -29,12 +29,15 @@ front:test:
   before_script:
     - cd game-frontend
   script:
-    - npm run ng test -- --code-coverage --watch=false --browsers=GitlabHeadlessChrome --reporters=progress,junit
+    - |
+      npm run ng test -- \
+      --watch=false --code-coverage --reporters=progress,junit \
+      --browsers=GitlabHeadlessChrome
   artifacts:
     when: always
-    paths:
-      - game-frontend/tests/junit-test-results.xml
-      - game-frontend/coverage/cobertura.xml
+    reports:
+      junit: game-frontend/tests/junit-test-results.xml
+      cobertura: game-frontend/coverage/cobertura.xml
   cache:
     key:
       files:
@@ -42,19 +45,3 @@ front:test:
     paths:
       - game-frontend/node_modules/
     policy: pull
-
-front:report:
-  stage: report
-  tags:
-    - ci
-  needs:
-    - front:test
-  when: always
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - cd game-frontend
-  artifacts:
-    reports:
-      junit: game-frontend/tests/junit-test-results.xml
-      cobertura: game-frontend/coverage/cobertura.xml

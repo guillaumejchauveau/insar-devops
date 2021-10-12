@@ -1,26 +1,44 @@
+workflow:
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
 stages:
   - build
   - check
   - report
   - publish
-  - review
+  - deploy
   - cleanup
-  - staging
+
+variables:
+  MAVEN_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/maven:3.8-openjdk-11"
+  NODE_CHROME_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/node-chrome"
+  OPENJDK_SCHEMATHESIS_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/openjdk-schemathesis"
+  SWAGGER_CODEGEN_CLI_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/swagger-codegen-cli"
+  DOCKER_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/docker:20.10"
+  DOCKER_DIND_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/docker:20.10-dind"
+  AUTO_DEPLOY_IMAGE_VERSION: 'v2.12.0'
+
+api:build:
+  stage: build
+  image:
+    name: $SWAGGER_CODEGEN_CLI_IMAGE
+    entrypoint: [""]
+  tags:
+    - ci
+  script:
+    - java -jar /opt/swagger-codegen-cli/swagger-codegen-cli.jar generate -l openapi -i openapi.yml
+  artifacts:
+    paths:
+      - openapi.json
 
 include:
   - /.gitlab-ci.back.yml
   - /.gitlab-ci.front.yml
 
-variables:
-  MAVEN_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/maven:3.8-openjdk-11"
-  NODE_CHROME_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/node-chrome:16"
-  ALPINE_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/alpine:3"
-  DOCKER_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/docker:20.10"
-  DOCKER_DIND_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/docker:20.10-dind"
-  AUTO_DEPLOY_IMAGE_VERSION: 'v2.12.0'
-
-image: $ALPINE_IMAGE
-
+# Procedure used to log into GitLab's container registry.
 .docker-login-script: &docker-login-script
   - |
     if [[ -n "$CI_REGISTRY" && -n "$CI_REGISTRY_USER" ]]; then
@@ -28,6 +46,9 @@ image: $ALPINE_IMAGE
       echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
     fi
 
+# All images used in this workflow are registered to GitLab's container registry
+# in order to mitigate Docker Hub pull limitations. This job automatically pulls
+# and registers the required images to the local registry.
 register-images:
   image: docker:20.10
   services:
@@ -37,18 +58,33 @@ register-images:
   stage: .pre
   script:
     - *docker-login-script
-    - docker pull alpine:3 && docker tag alpine:3 $ALPINE_IMAGE
-    - docker push $ALPINE_IMAGE
     - docker pull docker:20.10 && docker tag docker:20.10 $DOCKER_IMAGE
     - docker push $DOCKER_IMAGE
     - docker pull docker:20.10-dind && docker tag docker:20.10-dind $DOCKER_DIND_IMAGE
     - docker push $DOCKER_DIND_IMAGE
     - docker pull maven:3.8-openjdk-11 && docker tag maven:3.8-openjdk-11 $MAVEN_IMAGE
     - docker push $MAVEN_IMAGE
-    - docker build --pull -t $NODE_CHROME_IMAGE node-chrome
+    - docker pull swaggerapi/swagger-codegen-cli-v3 && docker tag swaggerapi/swagger-codegen-cli-v3 $SWAGGER_CODEGEN_CLI_IMAGE
+    - docker push $SWAGGER_CODEGEN_CLI_IMAGE
+    - docker build -t $NODE_CHROME_IMAGE node-chrome
     - docker push $NODE_CHROME_IMAGE
+    - docker build -t $OPENJDK_SCHEMATHESIS_IMAGE openjdk-schemathesis
+    - docker push $OPENJDK_SCHEMATHESIS_IMAGE
   when: manual
 
+####
+# The following GitLab CI configuration is responsible for the Continuous
+# Deployment of this project. It is inspired by GitLab's AutoBuild and
+# AutoDeploy templates.
+#
+# For both game-backend and game-frontend, images are published to the GitLab
+# registry. There is one image (for each) per git branch, named for example
+# `backend/master`, and one image for all git tags (ex: `backend:D2`).
+####
+
+# Procedure used to identify the image name and tag from the VCS context.
+# We want to keep different version of the published images depending on the
+# branch, tag...
 .image-vars-script: &image-vars-script
   - |
     if [[ -z "$CI_COMMIT_TAG" ]]; then
@@ -72,6 +108,10 @@ register-images:
     - *docker-login-script
     - *image-vars-script
 
+# Function used to publish an image.
+# Should be called while in the directory containing the Dockerfile.
+# Should be called while variables $IMAGE and $IMAGE_TAG have been set with the
+# target image name and tag.
 .publish-script: &publish-script
   - |
     image_previous="$IMAGE:$CI_COMMIT_BEFORE_SHA"
@@ -90,8 +130,11 @@ register-images:
 
 back:publish:
   extends: .publish-job
+  # Requires the tests to pass and the JAR from the build job.
   needs:
-    - job: back:test
+    - job: back:verify
+      artifacts: false
+    - job: back:integration_test
       artifacts: false
     - job: back:build
       artifacts: true
@@ -102,6 +145,7 @@ back:publish:
 
 front:publish:
   extends: .publish-job
+  # Requires the tests to pass and the files from the build job.
   needs:
     - job: front:test
       artifacts: false
@@ -116,6 +160,9 @@ front:publish:
   image: "registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:${AUTO_DEPLOY_IMAGE_VERSION}"
   dependencies: []
 
+# Procedure used to deploy the project to a Kubernetes cluster.
+# Uses the GitLab AutoDeploy image for its utilities but manually deploys the
+# project.
 .deploy-script: &deploy-script
   - auto-deploy check_kube_domain
   - auto-deploy ensure_namespace
@@ -125,14 +172,15 @@ front:publish:
     helm upgrade --install \
     --wait \
     --set image.secrets[0].name="gitlab-registry-${CI_PROJECT_PATH_SLUG}" \
+    --set tls.enabled="true" \
     --set gitlab.app="$CI_PROJECT_PATH_SLUG" \
     --set gitlab.env="$CI_ENVIRONMENT_SLUG" \
     --set gitlab.envName="$CI_ENVIRONMENT_NAME" \
     --set gitlab.envURL="$CI_ENVIRONMENT_URL" \
-    --set releaseOverride="$RELEASE_NAME" \
-    --set front.url="$CI_ENVIRONMENT_URL" \
     --set front.image.name="$FRONTEND_IMAGE" \
     --set-string front.image.tag="$IMAGE_TAG" \
+    --set back.image.name="$BACKEND_IMAGE" \
+    --set-string back.image.tag="$IMAGE_TAG" \
     --namespace="$KUBE_NAMESPACE" \
     "$CI_ENVIRONMENT_SLUG" \
     chart/
@@ -141,13 +189,13 @@ review:
   tags:
     - review
   extends: .deploy-job
-  stage: review
+  stage: deploy
   script:
     - *deploy-script
     - auto-deploy persist_environment_url
   environment:
     name: review/$CI_COMMIT_REF_NAME
-    url: http://$CI_PROJECT_ID-$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    url: https://$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
     on_stop: stop_review
   artifacts:
     paths: [environment_url.txt]
@@ -159,7 +207,7 @@ review:
       when: never
     - if: '$REVIEW_DISABLED'
       when: never
-    - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH'
+    - if: '$CI_COMMIT_TAG || $CI_MERGE_REQUEST_IID'
 
 stop_review:
   tags:
@@ -184,25 +232,19 @@ stop_review:
       when: never
     - if: '$REVIEW_DISABLED'
       when: never
-    - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH'
+    - if: '$CI_COMMIT_TAG || $CI_MERGE_REQUEST_IID'
       when: manual
-
-# Staging deploys are disabled by default since
-# continuous deployment to production is enabled by default
-# If you prefer to automatically deploy to staging and
-# only manually promote to production, enable this job by setting
-# STAGING_ENABLED.
 
 staging:
   tags:
     - staging
   extends: .deploy-job
-  stage: staging
+  stage: deploy
   script:
     - *deploy-script
   environment:
     name: staging
-    url: http://$CI_PROJECT_PATH_SLUG-staging.$KUBE_INGRESS_BASE_DOMAIN
+    url: https://$CI_ENVIRONMENT_SLUG.$KUBE_INGRESS_BASE_DOMAIN
   rules:
     - if: '$CI_KUBERNETES_ACTIVE == null || $CI_KUBERNETES_ACTIVE == ""'
       when: never
