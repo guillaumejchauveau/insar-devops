@@ -45,3 +45,23 @@ front:test:
     paths:
       - game-frontend/node_modules/
     policy: pull
+
+
+front:lint:
+  stage: check
+  image: $NODE_CHROME_IMAGE
+  tags:
+    - ci
+  needs:
+    - front:build
+  before_script:
+    - cd game-frontend
+  script:
+    - npm run ng lint
+  cache:
+    key:
+      files:
+        - game-frontend/package-lock.json
+    paths:
+      - game-frontend/node_modules/
+    policy: pull
