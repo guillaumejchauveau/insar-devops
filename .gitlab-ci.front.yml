@@ -5,8 +5,8 @@ front:build:
     - ci
   before_script:
     - cd game-frontend
-  script:
     - npm install
+  script:
     - npm run ng build -- --prod --build-optimizer
   artifacts:
     paths:
@@ -28,6 +28,7 @@ front:test:
     - front:build
   before_script:
     - cd game-frontend
+    - npm install
   script:
     - |
       npm run ng test -- \
@@ -44,8 +45,6 @@ front:test:
         - game-frontend/package-lock.json
     paths:
       - game-frontend/node_modules/
-    policy: pull
-
 
 front:lint:
   stage: check
@@ -56,6 +55,7 @@ front:lint:
     - front:build
   before_script:
     - cd game-frontend
+    - npm install
   script:
     - npm run ng lint
   cache:
@@ -64,4 +64,3 @@ front:lint:
         - game-frontend/package-lock.json
     paths:
       - game-frontend/node_modules/
-    policy: pull
