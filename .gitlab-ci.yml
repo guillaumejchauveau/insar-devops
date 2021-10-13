@@ -149,6 +149,8 @@ front:publish:
   needs:
     - job: front:test
       artifacts: false
+    - job: front:lint
+      artifacts: false
     - job: front:build
       artifacts: true
   script:

@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'map',
+  selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css']
 })
@@ -17,10 +17,10 @@ export class MapComponent implements OnInit {
     ['empty', 'water', 'water', 'water', 'water', 'water', 'water', 'water', 'tree', 'tree'],
     ['water', 'water', 'water', 'water', 'water', 'water', 'water', 'water', 'empty', 'tree'],
     ['water', 'water', 'water', 'water', 'water', 'water', 'water', 'water', 'empty', 'tree']
-  ]
+  ];
 
-  constructor () { }
+  constructor() { }
 
-  ngOnInit (): void {
+  ngOnInit(): void {
   }
 }
