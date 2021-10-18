@@ -76,11 +76,12 @@ front:report_lint:
     - ci
   needs:
     - front:lint
+  variables:
+    GIT_STRATEGY: none
   when: always
-  before_script:
-    - cd game-frontend
   script:
-    - cat tslint-report.xml | python /opt/checkstyle-report-codeclimate.py > codeclimate.xml
+    - cd game-frontend
+    - cat tslint-report.xml | python /opt/checkstyle-report-codeclimate.py > gl-code-quality-report.json
   artifacts:
     reports:
-      codequality: game-frontend/codeclimate.xml
+      codequality: game-frontend/gl-code-quality-report.json
