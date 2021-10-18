@@ -55,15 +55,15 @@ back:integration_test:
       schemathesis run \
       --checks all \
       --base-url=http://localhost:4444 \
-      --junit-xml=schemathesis.xml \
-      --store-network-log=log.yml \
+      --junit-xml=game-backend/schemathesis.xml \
+      --store-network-log=game-backend/schemathesis-log.yml \
       ./openapi.json
   artifacts:
     when: always
     reports:
-      junit: schemathesis.xml
+      junit: game-backend/schemathesis.xml
     paths:
-      - log.yml
+      - game-backend/schemathesis-log.yml
 
 back:report_jacoco:
   stage: report
@@ -74,10 +74,11 @@ back:report_jacoco:
     - back:verify
   when: always
   script:
-    - python /opt/cover2cover.py game-backend/target/site/jacoco/jacoco.xml $CI_PROJECT_DIR/game-backend/src/main/java/ > cobertura-coverage.xml
+    - cd game-backend
+    - python /opt/cover2cover.py target/site/jacoco/jacoco.xml $CI_PROJECT_DIR/game-backend/src/main/java/ > cobertura-coverage.xml
   artifacts:
     reports:
-      cobertura: cobertura-coverage.xml
+      cobertura: game-backend/cobertura-coverage.xml
 
 back:report_checkstyle:
   stage: report
@@ -86,12 +87,15 @@ back:report_checkstyle:
     - ci
   needs:
     - back:verify
+  variables:
+    GIT_STRATEGY: none
   when: always
   script:
-    - cat game-backend/target/checkstyle-result.xml | python /opt/checkstyle-report-codeclimate.py > gl-code-quality-report.xml
+    - cd game-backend
+    - cat target/checkstyle-result.xml | python /opt/checkstyle-report-codeclimate.py > gl-code-quality-report.json
   artifacts:
     reports:
-      codequality: gl-code-quality-report.xml
+      codequality: game-backend/gl-code-quality-report.json
 
 back:report_spotbugs:
   stage: report
@@ -100,9 +104,12 @@ back:report_spotbugs:
     - ci
   needs:
     - back:verify
+  variables:
+    GIT_STRATEGY: none
   when: always
   script:
-    - /analyzer convert game-backend/target/spotbugsXml.xml > gl-sast-report.json
+    - cd game-backend
+    - /analyzer convert target/spotbugsXml.xml > gl-sast-report.json
   artifacts:
     reports:
-      sast: gl-sast-report.json
+      sast: game-backend/gl-sast-report.json
