@@ -25,13 +25,15 @@ back:verify:
   before_script:
     - cd game-backend
   script:
-    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository verify
+    - mvn -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository --fail-at-end verify
   artifacts:
     when: always
     reports:
       junit: game-backend/target/surefire-reports/TEST-*.xml
     paths:
       - game-backend/target/site/jacoco/jacoco.xml
+      - game-backend/target/checkstyle-result.xml
+      - game-backend/target/spotbugsXml.xml
   cache:
     paths:
       - $CI_PROJECT_DIR/.m2/repository/
@@ -47,20 +49,23 @@ back:integration_test:
   variables:
     GIT_STRATEGY: none
   script:
-    - java -cp game-backend/target/game-backend-* game.Main http://0.0.0.0:4444/ &
+    - java -cp game-backend/target/game-backend-* cpoo_project.game_backend.Main &
     - sleep 2
     - |
       schemathesis run \
       --checks all \
       --base-url=http://localhost:4444 \
       --junit-xml=schemathesis.xml \
+      --store-network-log=log.yml \
       ./openapi.json
   artifacts:
     when: always
     reports:
       junit: schemathesis.xml
+    paths:
+      - log.yml
 
-back:report:
+back:report_jacoco:
   stage: report
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
   tags:
@@ -68,11 +73,36 @@ back:report:
   needs:
     - back:verify
   when: always
-  before_script:
-    - cd game-backend
   script:
-    # convert report from jacoco to cobertura, using relative project path
-    - python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java/ > target/site/cobertura.xml
+    - python /opt/cover2cover.py game-backend/target/site/jacoco/jacoco.xml $CI_PROJECT_DIR/game-backend/src/main/java/ > cobertura-coverage.xml
   artifacts:
     reports:
-      cobertura: game-backend/target/site/cobertura.xml
+      cobertura: cobertura-coverage.xml
+
+back:report_checkstyle:
+  stage: report
+  image: $CHECKSTYLE_REPORT_CODECLIMATE_IMAGE
+  tags:
+    - ci
+  needs:
+    - back:verify
+  when: always
+  script:
+    - cat game-backend/target/checkstyle-result.xml | python /opt/checkstyle-report-codeclimate.py > gl-code-quality-report.xml
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.xml
+
+back:report_spotbugs:
+  stage: report
+  image: registry.gitlab.com/gitlab-org/security-products/analyzers/spotbugs:2
+  tags:
+    - ci
+  needs:
+    - back:verify
+  when: always
+  script:
+    - /analyzer convert game-backend/target/spotbugsXml.xml > gl-sast-report.json
+  artifacts:
+    reports:
+      sast: gl-sast-report.json

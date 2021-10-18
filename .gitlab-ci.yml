@@ -17,6 +17,7 @@ variables:
   NODE_CHROME_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/node-chrome"
   OPENJDK_SCHEMATHESIS_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/openjdk-schemathesis"
   SWAGGER_CODEGEN_CLI_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/swagger-codegen-cli"
+  CHECKSTYLE_REPORT_CODECLIMATE_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/checkstyle-report-codeclimate"
   DOCKER_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/docker:20.10"
   DOCKER_DIND_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/docker:20.10-dind"
   AUTO_DEPLOY_IMAGE_VERSION: 'v2.12.0'
@@ -58,14 +59,21 @@ register-images:
   stage: .pre
   script:
     - *docker-login-script
-    - docker pull docker:20.10 && docker tag docker:20.10 $DOCKER_IMAGE
+    - docker pull docker:20.10
+    - docker tag docker:20.10 $DOCKER_IMAGE
     - docker push $DOCKER_IMAGE
-    - docker pull docker:20.10-dind && docker tag docker:20.10-dind $DOCKER_DIND_IMAGE
+    - docker pull docker:20.10-dind
+    - docker tag docker:20.10-dind $DOCKER_DIND_IMAGE
     - docker push $DOCKER_DIND_IMAGE
-    - docker pull maven:3.8-openjdk-11 && docker tag maven:3.8-openjdk-11 $MAVEN_IMAGE
+    - docker pull maven:3.8-openjdk-11
+    - docker tag maven:3.8-openjdk-11 $MAVEN_IMAGE
     - docker push $MAVEN_IMAGE
-    - docker pull swaggerapi/swagger-codegen-cli-v3 && docker tag swaggerapi/swagger-codegen-cli-v3 $SWAGGER_CODEGEN_CLI_IMAGE
+    - docker pull swaggerapi/swagger-codegen-cli-v3
+    - docker tag swaggerapi/swagger-codegen-cli-v3 $SWAGGER_CODEGEN_CLI_IMAGE
     - docker push $SWAGGER_CODEGEN_CLI_IMAGE
+    - docker pull guillaumejchauveau/checkstyle-report-codeclimate
+    - docker tag guillaumejchauveau/checkstyle-report-codeclimate $CHECKSTYLE_REPORT_CODECLIMATE_IMAGE
+    - docker push $CHECKSTYLE_REPORT_CODECLIMATE_IMAGE
     - docker build -t $NODE_CHROME_IMAGE node-chrome
     - docker push $NODE_CHROME_IMAGE
     - docker build -t $OPENJDK_SCHEMATHESIS_IMAGE openjdk-schemathesis

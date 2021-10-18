@@ -57,10 +57,30 @@ front:lint:
     - cd game-frontend
     - npm install
   script:
-    - npm run ng lint
+    - npm run --silent ng lint -- --format=checkstyle > tslint-report.xml
+  artifacts:
+    when: always
+    paths:
+      - game-frontend/tslint-report.xml
   cache:
     key:
       files:
         - game-frontend/package-lock.json
     paths:
       - game-frontend/node_modules/
+
+front:report_lint:
+  stage: report
+  image: $CHECKSTYLE_REPORT_CODECLIMATE_IMAGE
+  tags:
+    - ci
+  needs:
+    - front:lint
+  when: always
+  before_script:
+    - cd game-frontend
+  script:
+    - cat tslint-report.xml | python /opt/checkstyle-report-codeclimate.py > codeclimate.xml
+  artifacts:
+    reports:
+      codequality: game-frontend/codeclimate.xml
