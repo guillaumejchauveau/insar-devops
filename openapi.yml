@@ -3,8 +3,250 @@ info:
   version: "1.0.0"
   title: "CPOO project API"
 paths:
-  /:
+  /maps:
     get:
+      summary: List of map names
       responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+    post:
+      summary: Generate a new map
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameMap"
+          links:
+            GetMapByName:
+              operationId: GetMapByName
+              parameters:
+                mapName: "$response.body#/name"
+            GetReplayPlayerNamesByMapName:
+              operationId: GetReplayPlayerNamesByMapName
+              parameters:
+                mapName: "$response.body#/name"
+            RegisterReplayByMapName:
+              operationId: RegisterReplayByMapName
+              parameters:
+                mapName: "$response.body#/name"
+  /maps/{mapName}:
+    parameters:
+      - $ref: "#/components/parameters/MapName"
+    get:
+      operationId: GetMapByName
+      summary: A map
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameMap"
+          links:
+            GetReplayPlayerNamesByMapName:
+              operationId: GetReplayPlayerNamesByMapName
+              parameters:
+                mapName: "$response.body#/name"
+            RegisterReplayByMapName:
+              operationId: RegisterReplayByMapName
+              parameters:
+                mapName: "$response.body#/name"
         404:
-          description: API is currently undefined
+          $ref: "#/components/responses/NotFound"
+  /maps/{mapName}/replays:
+    parameters:
+      - $ref: "#/components/parameters/MapName"
+    get:
+      operationId: GetReplayPlayerNamesByMapName
+      summary: List of player names who registered a replay of a map
+      parameters:
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [playerName, score]
+          description: Which field to use for sorting
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: The numbers of items to return
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        404:
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: RegisterReplayByMapName
+      summary: Register a replay for a map
+      description: |
+        The given replay is registered if its score is better than the current
+        replay registered for the player.
+        Data consistency will be checked (moves respect game rules and are in
+        the map boundaries).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameReplay"
+      responses:
+        201:
+          description: |
+            The new replay was registered as it was better than the last.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameReplay"
+          links:
+            GetReplayByMapNameAndPlayerName:
+              operationId: GetReplayByMapNameAndPlayerName
+              parameters:
+                mapName: "$request.path.mapName"
+                playerName: "$response.body#/player/name"
+        204:
+          description: |
+            The last registered replay was better than the new one and was kept
+            instead.
+        # https://stackoverflow.com/questions/16133923/400-vs-422-response-to-post-of-data
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+  /maps/{mapName}/replays/{playerName}:
+    parameters:
+      - $ref: "#/components/parameters/MapName"
+      - $ref: "#/components/parameters/PlayerName"
+    get:
+      operationId: GetReplayByMapNameAndPlayerName
+      summary: Best replay registered for a map/player
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameReplay"
+        404:
+          $ref: "#/components/responses/NotFound"
+components:
+  parameters:
+    MapName:
+      name: mapName
+      in: path
+      schema:
+        type: string
+      description: Name of a map
+      required: true
+    PlayerName:
+      name: playerName
+      in: path
+      schema:
+        type: string
+      description: Name of a player
+      required: true
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    GameMap:
+      type: object
+      properties:
+        name:
+          type: string
+        width:
+          type: integer
+          minimum: 0
+        height:
+          type: integer
+          minimum: 0
+        startTiles:
+          type: array
+          items:
+            $ref: "#/components/schemas/NatureTile"
+      required:
+        - name
+        - width
+        - height
+        - startTiles
+    GameReplay:
+      type: object
+      properties:
+        player:
+          $ref: "#/components/schemas/Player"
+        moves:
+          type: array
+          items:
+            $ref: "#/components/schemas/GameMove"
+      required:
+        - player
+        - moves
+    Player:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+    GameMove:
+      type: object
+      properties:
+        x:
+          type: integer
+          minimum: 0
+        y:
+          type: integer
+          minimum: 0
+        tile:
+          $ref: "#/components/schemas/CityTile"
+      required:
+        - x
+        - y
+        - tile
+    CityTile:
+      type: string
+      enum:
+        - CIRCUS
+        - FOUNTAIN
+        - HOUSE
+        - WINDMILL
+    NatureTile:
+      type: string
+      enum:
+        - GRASS
+        - TREE
+        - WATER
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      required:
+        - code
+        - message

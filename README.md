@@ -5,8 +5,6 @@ You have to put these files on a gitlab project.
 
 ## Layout
 
-`game-bundle` contains scripts to use for each delivery: edit them to set up your names.
-
 `game-backend` is backend of the application. It contains th Java code of the server.
 It is in charge with providing a REST API.
 
