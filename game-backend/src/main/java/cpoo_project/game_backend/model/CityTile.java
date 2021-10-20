@@ -46,7 +46,6 @@ public enum CityTile implements Tile {
   );
 
   CityTile() {
-
   }
 
   CityTile(final String name, final Integer points, final Integer neighbourPointsRadius) {

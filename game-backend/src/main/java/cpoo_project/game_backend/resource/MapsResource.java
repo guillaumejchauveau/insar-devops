@@ -23,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Api
 @Singleton
@@ -45,7 +46,7 @@ public class MapsResource {
   public Response generateMap() {
     return Response
       .status(Response.Status.CREATED)
-      .entity(new GameMap("test", 0, 0, List.of()))
+      .entity(new GameMap("test", 0, 0, List.of(), Map.of()))
       .build();
   }
 
@@ -87,7 +88,7 @@ public class MapsResource {
     @ApiResponse(code = 400, message = "Bad request", response = Error.class),
     @ApiResponse(code = 404, message = "The specified resource was not found", response = Error.class)
   })
-  public GameReplay registerReplayByMapName(
+  public Response registerReplayByMapName(
     @PathParam("mapName") @NotNull final String mapName,
     @NotNull @Valid final GameReplay gameReplay)
     throws NotFoundException, BadRequestException {
