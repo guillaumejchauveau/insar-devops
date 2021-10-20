@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Tile } from '../model/tile';
+import { GameService } from '../service/game.service';
 
 @Component({
   selector: 'app-map',
@@ -6,20 +8,11 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./map.component.css']
 })
 export class MapComponent implements OnInit {
-  tiles = [
-    ['tree', 'tree', 'tree', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'],
-    ['tree', 'tree', 'empty', 'fountain', 'house', 'house', 'empty', 'empty', 'empty', 'empty'],
-    ['tree', 'tree', 'empty', 'empty', 'house', 'empty', 'empty', 'empty', 'tree', 'empty'],
-    ['tree', 'tree', 'empty', 'empty', 'empty', 'empty', 'empty', 'tree', 'tree', 'tree'],
-    ['tree', 'empty', 'empty', 'wind-turbine', 'wind-turbine', 'wind-turbine', 'empty', 'tree', 'tree', 'tree'],
-    ['empty', 'circus', 'empty', 'wind-turbine', 'water', 'water', 'water', 'empty', 'tree', 'tree'],
-    ['empty', 'empty', 'water', 'water', 'water', 'water', 'water', 'water', 'tree', 'tree'],
-    ['empty', 'water', 'water', 'water', 'water', 'water', 'water', 'water', 'tree', 'tree'],
-    ['water', 'water', 'water', 'water', 'water', 'water', 'water', 'water', 'empty', 'tree'],
-    ['water', 'water', 'water', 'water', 'water', 'water', 'water', 'water', 'empty', 'tree']
-  ];
+  tiles: Array<Array<Tile>>;
 
-  constructor() { }
+  constructor(private gameService: GameService) {
+    this.tiles = this.gameService.game.getTiles();
+  }
 
   ngOnInit(): void {
   }
