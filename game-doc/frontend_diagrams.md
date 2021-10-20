@@ -40,7 +40,7 @@ class GameMap {
 GameMap --> "*" NatureTile: startTiles
 
 class GameReplay {
-    Integer getScore()
+    getScore() Integer
 }
 GameReplay --> "1" GameMap: map
 GameReplay --> "1" Player: player
@@ -52,18 +52,11 @@ class GameMove {
 }
 GameMove --> "1" CityTile: tile
 
-class GameMapBuilder {
-    setName(String name) GameMapBuilder
-    setDimensions(Integer width, Integer height) GameMapBuilder
-    setStartTiles(List<NatureTile> startTiles) GameMapBuilder
-    build() GameMap
+class GameMapsController {
+    generateMap() GameMap
+    registerReplay(GameReplay replay)
 }
-GameMapBuilder --> "1" GameMapManager: manager
-
-class GameMapManager {
-    getBuilder() GameMapBuilder
-}
-GameMapManager --> "*" GameMap: maps
+GameMapsController --> "*" GameMap: maps
 
 class GameInventory {
     Map~CityTile, Integer~ tiles
@@ -74,11 +67,11 @@ class Game {
     Integer turn
     String playerName
     -computeTurnScoreThreshold(Integer turn)$ Integer
-    -addToScore(Integer points) void
-    play(GameMove move) void
-    undo() void
-    redo() void
-    setPlayerName(String name) void
+    -addToScore(Integer points)
+    play(GameMove move)
+    undo()
+    redo()
+    setPlayerName(String name)
 }
 Game --> "1" GameMap: map
 Game --* "1" GameInventory: inventory

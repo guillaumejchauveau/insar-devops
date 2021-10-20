@@ -1,10 +1,10 @@
-# Backend model diagram
+# Backend class diagram
 
 ```mermaid
 classDiagram
 class Tile {
     <<interface>>
-    String name
+    +getName() String
 }
 
 Tile <|-- NatureTile
@@ -13,6 +13,9 @@ class NatureTile {
     GRASS
     TREE
     WATER
+    -String name
+    NatureTile(String name)
+    +getName() String
 }
 
 Tile <|-- CityTile
@@ -22,46 +25,81 @@ class CityTile {
     FOUNTAIN
     HOUSE
     WINDMILL
-    Integer points
-    Integer neighbourPointsRadius
-    getNeighbourPointsFor(Tile tile) Integer
+    -Map~CityTile, Map<Tile, Integer>~ neighbourPoints$
+    -String name
+    -Integer points
+    -Integer neighbourPointsRadius
+    CityTile(String name, Integer points, Integer neighbourPointsRadius)
+    +getName() String
+    +getPoints() Integer
+    +getNeighbourPointsRadius() Integer
+    +getNeighbourPointsFor(Tile tile) Integer
 }
 
 class Player {
-    String name
+    -String name
+    +Player(String name)
+    +getName() String
 }
 
 class GameMap {
-    String name
-    Integer width
-    Integer height
-    Map~Player, GameReplay~ replays
+    -String name
+    -Integer width
+    -Integer height
+    -Map~Player, GameReplay~ replays
+    +GameMap(String name, Integer width, Integer height, List~NatureTile~ startTiles)
+    +getName() String
+    +getWidth() Integer
+    +getHeight() Integer
+    +getStartTiles() List~NatureTile~
+    +getReplays() Map~Player, GameReplay~
+    +registerReplay(GameReplay replay) Boolean
 }
 GameMap --> "*" NatureTile: startTiles
 
 class GameReplay {
-    Integer getScore()
+    +GameReplay(GameMap map, Player player, List~GameMove~ moves)
+    +getMap() GameMap
+    +getPlayer() Player
+    +getMoves() List~GameMove~
+    +getScore() Integer
 }
 GameReplay --> "1" GameMap: map
 GameReplay --> "1" Player: player
 GameReplay --* "*" GameMove: moves
 
 class GameMove {
-    Integer x
-    Integer y
+    -Integer x
+    -Integer y
+    +GameMove(Integer x, Integer y, CityTile tile)
+    +getX() Integer
+    +getY() Integer
+    +getTile() CityTile
 }
 GameMove --> "1" CityTile: tile
 
-class GameMapBuilder {
-    setName(String name) GameMapBuilder
-    setDimensions(Integer width, Integer height) GameMapBuilder
-    setStartTiles(List<NatureTile> startTiles) GameMapBuilder
-    build() GameMap
+class GameMapsStorage {
+    +GameMapsStorage(File storageDirectory)
+    +load() Collection~GameMap~
+    +save(GameMap map)
 }
-GameMapBuilder --> "1" GameMapManager: manager
 
-class GameMapManager {
-    getBuilder() GameMapBuilder
+class GameMapsController {
+    +GameMapsController(GameMapsStorage storage)
+    +getMaps() Stream~GameMap~
+    +generateMap() GameMap
+    +registerReplay(GameReplay replay) Boolean
 }
-GameMapManager --> "*" GameMap: maps
+GameMapsController --* "1" GameMapsStorage: storage
+GameMapsController --> "*" GameMap: maps
+
+class MapsResource {
+    +getMapNames() Collection~String~
+    +generateMap() GameMap
+    +getMapByName(String mapName) GameMap
+    +getReplayPlayerNamesByMapName(String mapName, String sortBy, Integer limit) List~String~
+    +registerReplayByMapName(String mapName, GameReplay gameReplay) GameReplay
+    +getReplayByMapNameAndPlayerName(String mapName, String playerName) GameReplay
+}
+MapsResource --> "1" GameMapsController: mapController
 ```

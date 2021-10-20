@@ -15,7 +15,6 @@ public enum NatureTile implements Tile {
   private String name;
 
   NatureTile() {
-
   }
 
   NatureTile(final String name) {

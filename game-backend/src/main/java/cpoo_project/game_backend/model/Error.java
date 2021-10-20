@@ -12,7 +12,6 @@ public class Error {
   private String message;
 
   public Error() {
-
   }
 
   public Error(final Integer code, final String message) {

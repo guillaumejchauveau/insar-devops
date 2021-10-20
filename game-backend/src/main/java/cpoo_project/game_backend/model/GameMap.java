@@ -2,59 +2,78 @@ package cpoo_project.game_backend.model;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.PROPERTY)
+@XmlAccessorType(XmlAccessType.NONE)
 public class GameMap {
   private String name;
   private Integer width;
   private Integer height;
   private List<NatureTile> startTiles;
-  //private Map<Player, GameReplay> replays;
+  private Map<Player, GameReplay> replays;
 
   public GameMap() {
-
   }
 
-  public GameMap(final String name, final Integer width, final Integer height, final List<NatureTile> startTiles) {
+  public GameMap(final String name,
+                 final Integer width,
+                 final Integer height,
+                 final List<NatureTile> startTiles,
+                 final Map<Player, GameReplay> replays) {
     this.name = name;
     this.width = width;
     this.height = height;
     this.startTiles = List.copyOf(startTiles);
+    this.replays = new HashMap<>(replays);
   }
 
+  @XmlAttribute
   public String getName() {
     return name;
   }
 
-  public void setName(final String name) {
-    this.name = name;
-  }
-
+  @XmlAttribute
   public Integer getWidth() {
     return width;
   }
 
-  public void setWidth(final Integer width) {
-    this.width = width;
-  }
-
+  @XmlAttribute
   public Integer getHeight() {
     return height;
   }
 
-  public void setHeight(final Integer height) {
-    this.height = height;
-  }
-
+  @XmlElement
   public List<NatureTile> getStartTiles() {
+    if (startTiles == null) {
+      return List.of();
+    }
     return Collections.unmodifiableList(startTiles);
   }
 
-  public void setStartTiles(final List<NatureTile> startTiles) {
-    this.startTiles = List.copyOf(startTiles);
+  public Map<Player, GameReplay> getReplays() {
+    if (replays == null) {
+      return Map.of();
+    }
+    return Collections.unmodifiableMap(replays);
+  }
+
+  public Boolean registerReplay(final GameReplay replay) throws IllegalArgumentException {
+    if (replay.getMap() != this) {
+      throw new IllegalArgumentException();
+    }
+    final var bestPlayerReplay = replays.merge(replay.getPlayer(), replay, (oldValue, newValue) -> {
+      if (newValue.getScore() > oldValue.getScore()) {
+        return newValue;
+      }
+      return oldValue;
+    });
+    return bestPlayerReplay == replay;
   }
 }
