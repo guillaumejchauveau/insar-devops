@@ -1,12 +1,12 @@
 export interface Tile {
-  name: string;
+  readonly name: string;
 }
 
 export class NatureTile implements Tile {
-  public static WATER: NatureTile = new NatureTile('water');
-  public static GRASS: NatureTile = new NatureTile('grass');
-  public static TREE: NatureTile = new NatureTile('tree');
-  name: string;
+  public static readonly WATER: NatureTile = new NatureTile('water');
+  public static readonly GRASS: NatureTile = new NatureTile('grass');
+  public static readonly TREE: NatureTile = new NatureTile('tree');
+  readonly name: string;
 
   private constructor(name: string) {
     this.name = name;
