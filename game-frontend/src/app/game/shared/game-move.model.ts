@@ -1,6 +1,6 @@
-import { CityTile } from './tile';
+import { CityTile } from './tile.model';
 
-export class GameMove {
+export class GameMoveModel {
   private x: number;
   private y: number;
   private tile: CityTile;
