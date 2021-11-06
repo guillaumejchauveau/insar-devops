@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Tile } from '../model/tile';
-import { GameService } from '../service/game.service';
+import { Tile } from '../shared/tile.model';
+import { GameService } from '../shared/game.service';
 
 @Component({
   selector: 'app-map',
@@ -8,7 +8,7 @@ import { GameService } from '../service/game.service';
   styleUrls: ['./map.component.css']
 })
 export class MapComponent implements OnInit {
-  tiles: Array<Array<Tile>>;
+  tiles: Array<Array<Tile>> = [];
 
   constructor(private gameService: GameService) {
     this.tiles = this.gameService.game.getTiles();

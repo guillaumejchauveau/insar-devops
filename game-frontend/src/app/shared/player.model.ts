@@ -1,4 +1,4 @@
-export class Player {
+export class PlayerModel {
   private name: string;
 
   public constructor(name: string) {

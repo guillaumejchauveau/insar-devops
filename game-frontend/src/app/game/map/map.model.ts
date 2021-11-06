@@ -1,6 +1,6 @@
-import { NatureTile } from './tile';
+import { NatureTile } from '../shared/tile.model';
 
-export class GameMap {
+export class MapModel {
   public readonly  name: string;
   public readonly  width: number;
   public readonly  height: number;

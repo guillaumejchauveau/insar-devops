@@ -1,27 +1,27 @@
-import { GameMove } from './game-move';
-import { GameInventory } from './game-inventory';
-import { GameMap } from './game-map';
-import { Tile, CityTile, NatureTile } from './tile';
+import { GameMoveModel } from './game-move.model';
+import { InventoryModel } from '../inventory/inventory.model';
+import { MapModel } from '../map/map.model';
+import { Tile, CityTile, NatureTile } from './tile.model';
 
-export class Game {
+export class GameModel {
   private score: number;
   private turn: number;
   private playername: string;
   private maxUndoRedo: number;
-  private undos: Array<GameMove>;
-  private redos: Array<GameMove>;
-  private inventory: GameInventory;
-  private readonly map: GameMap;
+  private undos: Array<GameMoveModel>;
+  private redos: Array<GameMoveModel>;
+  private inventory: InventoryModel;
+  private readonly map: MapModel;
   private tiles: Array<Array<Tile>>;
 
-  public constructor(map: GameMap, playername: string) {
+  public constructor(map: MapModel, playername: string) {
     this.score = 0;
     this.turn = 0;
     this.playername = playername;
     this.maxUndoRedo = 20;
     this.undos = new Array();
     this.redos = new Array();
-    this.inventory = new GameInventory();
+    this.inventory = new InventoryModel();
     this.map = map;
     this.tiles = new Array();
     for (let i = 0; i < map.width; i++) { // copy map.getTiles() in tiles
@@ -40,7 +40,7 @@ export class Game {
     this.score += points;
   }
 
-  public play(move: GameMove): void {
+  public play(move: GameMoveModel): void {
     this.redos.length = 0; // Empty the array
     if (this.undos.length === this.maxUndoRedo) { // Remove the first move if the array is too long
       this.undos.shift();
@@ -52,7 +52,7 @@ export class Game {
 
   public undo(): void {
     if (!this.undos.length) { // Undo the last move if the array is not empty
-      const move = this.undos.pop() as GameMove;
+      const move = this.undos.pop() as GameMoveModel;
       // TODO : undo the move and change the score
       if (this.redos.length === this.maxUndoRedo) { // Remove the first move to redo if the array is too long
         this.redos.shift();
@@ -64,7 +64,7 @@ export class Game {
 
   public redo(): void {
     if (!this.redos.length) { // Redo the last move if the array is not empty
-      const move = this.redos.pop() as GameMove;
+      const move = this.redos.pop() as GameMoveModel;
       // TODO : redo the move and change the score
       if (this.undos.length === this.maxUndoRedo) { // Remove the first move to undo if the array is too long
         this.undos.shift();
