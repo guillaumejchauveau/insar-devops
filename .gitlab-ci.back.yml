@@ -50,7 +50,8 @@ back:integration_test:
     GIT_STRATEGY: none
   script:
     - java -cp game-backend/target/game-backend-* cpoo_project.game_backend.Main &
-    - sleep 2
+    # Wait for backend to be ready.
+    - for i in $(seq 10); do STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:4444/swagger.json) || true; if [ $STATUS -eq 200 ]; then break; fi; sleep 2; done
     - |
       schemathesis run \
       --checks all \
