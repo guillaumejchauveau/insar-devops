@@ -90,9 +90,25 @@ paths:
                   type: string
         404:
           $ref: "#/components/responses/NotFound"
-    post:
+  /maps/{mapName}/replays/{playerName}:
+    parameters:
+      - $ref: "#/components/parameters/MapName"
+      - $ref: "#/components/parameters/PlayerName"
+    get:
+      operationId: GetReplayByMapNameAndPlayerName
+      summary: Best replay registered for a map/player
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameReplay"
+        404:
+          $ref: "#/components/responses/NotFound"
+    put:
       operationId: RegisterReplayByMapName
-      summary: Register a replay for a map
+      summary: Register a replay for a map/player
       description: |
         The given replay is registered if its score is better than the current
         replay registered for the player.
@@ -117,7 +133,7 @@ paths:
               operationId: GetReplayByMapNameAndPlayerName
               parameters:
                 mapName: "$request.path.mapName"
-                playerName: "$response.body#/player/name"
+                playerName: "$request.path.playerName"
         204:
           description: |
             The last registered replay was better than the new one and was kept
@@ -125,22 +141,6 @@ paths:
         # https://stackoverflow.com/questions/16133923/400-vs-422-response-to-post-of-data
         400:
           $ref: "#/components/responses/BadRequest"
-        404:
-          $ref: "#/components/responses/NotFound"
-  /maps/{mapName}/replays/{playerName}:
-    parameters:
-      - $ref: "#/components/parameters/MapName"
-      - $ref: "#/components/parameters/PlayerName"
-    get:
-      operationId: GetReplayByMapNameAndPlayerName
-      summary: Best replay registered for a map/player
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GameReplay"
         404:
           $ref: "#/components/responses/NotFound"
 components:
@@ -196,14 +196,11 @@ components:
     GameReplay:
       type: object
       properties:
-        player:
-          $ref: "#/components/schemas/Player"
         moves:
           type: array
           items:
             $ref: "#/components/schemas/GameMove"
       required:
-        - player
         - moves
     Player:
       type: object

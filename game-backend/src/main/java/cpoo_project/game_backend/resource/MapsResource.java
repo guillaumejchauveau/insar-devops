@@ -15,6 +15,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -78,23 +79,6 @@ public class MapsResource {
     throw new NotFoundException();
   }
 
-  @POST
-  @Path("/{mapName}/replays")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  @ApiResponses({
-    @ApiResponse(code = 201, message = "The new replay was registered as it was better than the last.", response = GameReplay.class),
-    @ApiResponse(code = 204, message = "The last registered replay was better than the new one and was kept instead."),
-    @ApiResponse(code = 400, message = "Bad request", response = Error.class),
-    @ApiResponse(code = 404, message = "The specified resource was not found", response = Error.class)
-  })
-  public Response registerReplayByMapName(
-    @PathParam("mapName") @NotNull final String mapName,
-    @NotNull @Valid final GameReplay gameReplay)
-    throws NotFoundException, BadRequestException {
-    throw new NotFoundException();
-  }
-
   @GET
   @Path("/{mapName}/replays/{playerName}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -106,6 +90,24 @@ public class MapsResource {
     @PathParam("mapName") @NotNull final String mapName,
     @PathParam("playerName") @NotNull final String playerName)
     throws NotFoundException {
+    throw new NotFoundException();
+  }
+
+  @PUT
+  @Path("/{mapName}/replays/{playerName}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @ApiResponses({
+    @ApiResponse(code = 201, message = "The new replay was registered as it was better than the last.", response = GameReplay.class),
+    @ApiResponse(code = 204, message = "The last registered replay was better than the new one and was kept instead."),
+    @ApiResponse(code = 400, message = "Bad request", response = Error.class),
+    @ApiResponse(code = 404, message = "The specified resource was not found", response = Error.class)
+  })
+  public Response registerReplayByMapName(
+    @PathParam("mapName") @NotNull final String mapName,
+    @PathParam("playerName") @NotNull final String playerName,
+    @NotNull @Valid final GameReplay gameReplay)
+    throws NotFoundException, BadRequestException {
     throw new NotFoundException();
   }
 }

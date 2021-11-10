@@ -3,10 +3,10 @@ import { CityTile, NatureTile } from './tile.model';
 import { GameModel } from './game.model';
 
 export class GameMoveModel extends UndoableCommand {
-  private x: number;
-  private y: number;
-  private gameModel: GameModel;
-  private tile: CityTile | undefined;
+  private readonly x: number;
+  private readonly y: number;
+  private readonly gameModel: GameModel;
+  private readonly tile: CityTile | undefined;
 
   public constructor(x: number, y: number, gameModel: GameModel) {
     super();

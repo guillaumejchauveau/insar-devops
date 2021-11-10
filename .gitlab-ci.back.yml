@@ -58,6 +58,7 @@ back:integration_test:
       --base-url=http://localhost:4444 \
       --junit-xml=game-backend/schemathesis.xml \
       --store-network-log=game-backend/schemathesis-log.yml \
+      --hypothesis-suppress-health-check filter_too_much,too_slow \
       ./openapi.json
   artifacts:
     when: always
