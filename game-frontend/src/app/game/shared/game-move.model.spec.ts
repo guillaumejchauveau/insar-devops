@@ -5,7 +5,7 @@ import { MapModel } from '../map/map.model';
 describe('GameMove', () => {
   it('should create an instance', () => {
     expect(new GameMoveModel(0, 0, new GameModel(
-      new MapModel('playername', 10, 10, []),
+      new MapModel('mapname', 10, 10, []),
       'playername'
     ))).toBeTruthy();
   });

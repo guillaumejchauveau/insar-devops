@@ -6,7 +6,7 @@ import { Tile } from './tile.model';
 export class GameModel {
   private score: number;
   private turn: number;
-  private playername: string;
+  private playerName: string;
   private maxUndoRedo: number;
   private undos: Array<GameMoveModel>;
   private redos: Array<GameMoveModel>;
@@ -14,10 +14,10 @@ export class GameModel {
   public readonly map: MapModel;
   private tiles: Array<Array<Tile>>;
 
-  public constructor(map: MapModel, playername: string) {
+  public constructor(map: MapModel, playerName: string) {
     this.score = 0;
     this.turn = 0;
-    this.playername = playername;
+    this.playerName = playerName;
     this.maxUndoRedo = 20;
     this.undos = new Array();
     this.redos = new Array();

@@ -11,15 +11,15 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.NONE)
 public class GameReplay {
   private GameMap map;
-  private Player player;
+  private String playerName;
   private List<GameMove> moves;
 
   public GameReplay() {
   }
 
-  public GameReplay(final GameMap map, final Player player, final List<GameMove> moves) {
+  public GameReplay(final GameMap map, final String playerName, final List<GameMove> moves) {
     this.map = map;
-    this.player = player;
+    this.playerName = playerName;
     this.moves = List.copyOf(moves);
   }
 
@@ -28,8 +28,8 @@ public class GameReplay {
   }
 
   @XmlElement
-  public Player getPlayer() {
-    return player;
+  public String getPlayerName() {
+    return playerName;
   }
 
   @XmlElement

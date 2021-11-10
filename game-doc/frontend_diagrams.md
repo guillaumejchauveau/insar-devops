@@ -27,23 +27,19 @@ class CityTile {
     getNeighbourPointsFor(Tile tile) Integer
 }
 
-class Player {
-    String name
-}
-
 class GameMap {
     String name
     Integer width
     Integer height
-    Map~Player, GameReplay~ replays
+    Map~String, GameReplay~ replays
 }
 GameMap --> "*" NatureTile: startTiles
 
 class GameReplay {
+    getPlayerName() String
     getScore() Integer
 }
 GameReplay --> "1" GameMap: map
-GameReplay --> "1" Player: player
 GameReplay --* "*" GameMove: moves
 
 class GameMove {

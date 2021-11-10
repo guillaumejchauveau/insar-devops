@@ -17,7 +17,7 @@ public class GameMap {
   private Integer width;
   private Integer height;
   private List<NatureTile> startTiles;
-  private Map<Player, GameReplay> replays;
+  private Map<String, GameReplay> replays;
 
   public GameMap() {
   }
@@ -26,7 +26,7 @@ public class GameMap {
                  final Integer width,
                  final Integer height,
                  final List<NatureTile> startTiles,
-                 final Map<Player, GameReplay> replays) {
+                 final Map<String, GameReplay> replays) {
     this.name = name;
     this.width = width;
     this.height = height;
@@ -57,7 +57,7 @@ public class GameMap {
     return Collections.unmodifiableList(startTiles);
   }
 
-  public Map<Player, GameReplay> getReplays() {
+  public Map<String, GameReplay> getReplays() {
     if (replays == null) {
       return Map.of();
     }
@@ -68,7 +68,7 @@ public class GameMap {
     if (replay.getMap() != this) {
       throw new IllegalArgumentException();
     }
-    final var bestPlayerReplay = replays.merge(replay.getPlayer(), replay, (oldValue, newValue) -> {
+    final var bestPlayerReplay = replays.merge(replay.getPlayerName(), replay, (oldValue, newValue) -> {
       if (newValue.getScore() > oldValue.getScore()) {
         return newValue;
       }
