@@ -1,7 +1,7 @@
 import { GameMoveModel } from './game-move.model';
 import { InventoryModel } from '../inventory/inventory.model';
 import { MapModel } from '../map/map.model';
-import { Tile, CityTile, NatureTile } from './tile.model';
+import { Tile } from './tile.model';
 
 export class GameModel {
   private score: number;
@@ -11,7 +11,7 @@ export class GameModel {
   private undos: Array<GameMoveModel>;
   private redos: Array<GameMoveModel>;
   private inventory: InventoryModel;
-  private readonly map: MapModel;
+  public readonly map: MapModel;
   private tiles: Array<Array<Tile>>;
 
   public constructor(map: MapModel, playername: string) {
@@ -36,45 +36,19 @@ export class GameModel {
     return 0;
   }
 
-  private addToScore(points: number): void{
+  public addToScore(points: number): void{
     this.score += points;
-  }
-
-  public play(move: GameMoveModel): void {
-    this.redos.length = 0; // Empty the array
-    if (this.undos.length === this.maxUndoRedo) { // Remove the first move if the array is too long
-      this.undos.shift();
-    }
-    // TODO : do the move and change the score
-    this.undos.push(move);
-    this.turn ++;
-  }
-
-  public undo(): void {
-    if (!this.undos.length) { // Undo the last move if the array is not empty
-      const move = this.undos.pop() as GameMoveModel;
-      // TODO : undo the move and change the score
-      if (this.redos.length === this.maxUndoRedo) { // Remove the first move to redo if the array is too long
-        this.redos.shift();
-      }
-      this.redos.push(move);
-      this.turn ++;
-    }
-  }
-
-  public redo(): void {
-    if (!this.redos.length) { // Redo the last move if the array is not empty
-      const move = this.redos.pop() as GameMoveModel;
-      // TODO : redo the move and change the score
-      if (this.undos.length === this.maxUndoRedo) { // Remove the first move to undo if the array is too long
-        this.undos.shift();
-      }
-      this.undos.push(move);
-      this.turn ++;
-    }
   }
 
   public getTiles(): Array<Array<Tile>> {
     return this.tiles;
+  }
+
+  public getInventory(): InventoryModel {
+    return this.inventory;
+  }
+
+  public getScore(): number {
+    return this.score;
   }
 }

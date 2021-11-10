@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { MapComponent } from './map/map.component';
 import { InventoryComponent } from './inventory/inventory.component';
 import { GameComponent } from './game.component';
-import { GameService } from './shared/game.service';
 import { ScoreComponent } from './score/score.component';
+import { InteractoModule } from 'interacto-angular';
+
 
 @NgModule({
   declarations: [
@@ -14,7 +15,8 @@ import { ScoreComponent } from './score/score.component';
     ScoreComponent
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    InteractoModule
   ],
   providers: [
   ],

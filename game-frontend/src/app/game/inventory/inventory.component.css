@@ -1,0 +1,38 @@
+.inventory
+{
+  margin: 10px;
+  position: fixed;
+  bottom: 0;
+  padding: 10px;
+  background: #E3E3E3;
+  border-radius: 25px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.inventoryTile {
+  margin: 10px;
+  padding: 5px;
+  display: inline-block;
+  background: #F0F0F0;
+  border-radius: 20px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.nbOfTiles {
+  position: absolute;
+  top: 0;
+  width: 20px;
+  line-height: 20px;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 20px;
+  color: white;
+  background: #3F52B6;
+}
+
+.selected {
+  background: #FAFAFA;
+  padding: 8px;
+  box-shadow: rgba(0, 0, 0, 0.85) 0px 5px 15px;
+}
+

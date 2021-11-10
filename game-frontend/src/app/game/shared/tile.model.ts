@@ -6,7 +6,7 @@ export class NatureTile implements Tile {
   public static readonly WATER: NatureTile = new NatureTile('water');
   public static readonly GRASS: NatureTile = new NatureTile('grass');
   public static readonly TREE: NatureTile = new NatureTile('tree');
-  readonly name: string;
+  public readonly name: string;
 
   private constructor(name: string) {
     this.name = name;
@@ -40,15 +40,15 @@ export class CityTile implements Tile {
       [NatureTile.WATER, 10]
     ])]
   ]);
-  readonly name: string;
-  readonly points: number;
+  public readonly name: string;
+  public readonly points: number;
 
   private constructor(name: string, points: number) {
     this.name = name;
     this.points = points;
   }
 
-  getNeighbourPointsFor(tile: Tile): number {
+  public getNeighbourPointsFor(tile: Tile): number {
     return CityTile.neighbourPointsMapping.get(this)?.get(tile) || 0;
   }
 }
