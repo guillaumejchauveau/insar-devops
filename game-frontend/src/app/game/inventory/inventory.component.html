@@ -1,1 +1,12 @@
-<p>inventory works!</p>
+<div class="inventory">
+  <ng-container *ngFor="let tile of gameService.game.getInventory().getTiles() | keyvalue">
+    <div [className]="tile.key === gameService.game.getInventory().getSelectedTile() ? 'selected inventoryTile' : 'inventoryTile'">
+      <img
+        class='img'
+        [attr.data-name]="tile.key.name"
+        [ioClick]="defineClickBinding"
+        [src]="'assets/' + tile.key.name + '.svg'">
+      <p class='nbOfTiles'>{{tile.value}}</p>
+    </div>
+  </ng-container>
+</div>

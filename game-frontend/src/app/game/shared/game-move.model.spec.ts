@@ -1,8 +1,12 @@
 import { GameMoveModel } from './game-move.model';
-import { CityTile } from './tile.model';
+import { GameModel } from './game.model';
+import { MapModel } from '../map/map.model';
 
 describe('GameMove', () => {
   it('should create an instance', () => {
-    expect(new GameMoveModel(0, 0, CityTile.HOUSE)).toBeTruthy();
+    expect(new GameMoveModel(0, 0, new GameModel(
+      new MapModel('playername', 10, 10, []),
+      'playername'
+    ))).toBeTruthy();
   });
 });

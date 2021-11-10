@@ -4,6 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { GameModule } from './game/game.module';
+import { InteractoModule } from 'interacto-angular';
 
 @NgModule({
   declarations: [
@@ -12,7 +13,8 @@ import { GameModule } from './game/game.module';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    GameModule
+    GameModule,
+    InteractoModule
   ],
   providers: [],
   bootstrap: [AppComponent]
