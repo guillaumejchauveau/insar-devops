@@ -14,6 +14,11 @@ export class ScoreComponent implements OnInit {
     this.game = gameService.game;
   }
 
+  getScorePercentage(): number {
+    const previousThreshold = this.game.getPreviousScoreThreshold();
+    return Math.round( (this.game.getScore() - previousThreshold) / (this.game.getScoreThreshold() - previousThreshold) * 100);
+  }
+
   ngOnInit(): void {
   }
 

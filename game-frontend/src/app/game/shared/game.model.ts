@@ -1,26 +1,19 @@
-import { GameMoveModel } from './game-move.model';
 import { InventoryModel } from '../inventory/inventory.model';
 import { MapModel } from '../map/map.model';
-import { Tile } from './tile.model';
+import { CityTile, Tile } from './tile.model';
 
 export class GameModel {
   private score: number;
   private turn: number;
-  private playerName: string;
-  private maxUndoRedo: number;
-  private undos: Array<GameMoveModel>;
-  private redos: Array<GameMoveModel>;
+  private playername: string;
   private inventory: InventoryModel;
   public readonly map: MapModel;
   private tiles: Array<Array<Tile>>;
 
-  public constructor(map: MapModel, playerName: string) {
+  public constructor(map: MapModel, playername: string) {
     this.score = 0;
-    this.turn = 0;
-    this.playerName = playerName;
-    this.maxUndoRedo = 20;
-    this.undos = new Array();
-    this.redos = new Array();
+    this.turn = 1;
+    this.playername = playername;
     this.inventory = new InventoryModel();
     this.map = map;
     this.tiles = new Array();
@@ -33,22 +26,51 @@ export class GameModel {
   }
 
   private static computeTurnScoreThreshold(turn: number): number {
-    return 0;
+    let score = 0;
+    for (let i = 1; i <= turn; i++) {
+      score += 10 * i;
+    }
+    return score;
+  }
+
+  public getScoreThreshold(): number {
+    return GameModel.computeTurnScoreThreshold(this.turn);
+  }
+
+  public getPreviousScoreThreshold(): number {
+    return GameModel.computeTurnScoreThreshold(this.turn - 1);
   }
 
   public addToScore(points: number): void{
     this.score += points;
+    // If the score is high enough, the player reaches the next turn
+    while (this.score >= this.getScoreThreshold()) {
+      this.turn ++;
+      // By reaching the next turn, the player earns 1 of each tile
+      this.inventory.addTile(CityTile.CIRCUS);
+      this.inventory.addTile(CityTile.HOUSE);
+      this.inventory.addTile(CityTile.WINDMILL);
+      this.inventory.addTile(CityTile.FOUNTAIN);
+    }
   }
 
-  public getTiles(): Array<Array<Tile>> {
-    return this.tiles;
+  public getScore(): number {
+    return this.score;
   }
 
   public getInventory(): InventoryModel {
     return this.inventory;
   }
 
-  public getScore(): number {
-    return this.score;
+  public getTurn(): number {
+    return this.turn;
+  }
+
+  public setTurn(turn: number): void {
+    this.turn = turn;
+  }
+
+  public getTiles(): Array<Array<Tile>> {
+    return this.tiles;
   }
 }

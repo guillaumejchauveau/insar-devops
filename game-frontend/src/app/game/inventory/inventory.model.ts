@@ -6,9 +6,9 @@ export class InventoryModel {
 
   public constructor() {
     this.tiles.set(CityTile.HOUSE, 1);
-    this.tiles.set(CityTile.WINDMILL, 2);
-    this.tiles.set(CityTile.CIRCUS, 3);
-    this.tiles.set(CityTile.FOUNTAIN, 4);
+    this.tiles.set(CityTile.WINDMILL, 0);
+    this.tiles.set(CityTile.CIRCUS, 0);
+    this.tiles.set(CityTile.FOUNTAIN, 0);
     this.selectedTile = CityTile.HOUSE;
   }
 
@@ -16,9 +16,9 @@ export class InventoryModel {
     return this.tiles;
   }
 
-  public useTile(tile: CityTile): void {
-    const nb = this.tiles.get(tile) as number;
-    this.tiles.set(tile, nb - 1);
+  public removeTile(tile: CityTile, nb: number = 1): void {
+    const tileNb = this.tiles.get(tile) as number;
+    this.tiles.set(tile, tileNb - nb);
     if (this.tiles.get(tile) === 0) {
       this.selectedTile = undefined;
     }
@@ -28,9 +28,9 @@ export class InventoryModel {
     return this.tiles.get(tile as CityTile) !== 0;
   }
 
-  public addTile(tile: CityTile): void {
-    const nb = this.tiles.get(tile) as number;
-    this.tiles.set(tile, nb + 1);
+  public addTile(tile: CityTile, nb: number = 1): void {
+    const tileNb = this.tiles.get(tile) as number;
+    this.tiles.set(tile, tileNb + nb);
   }
 
   public setSelectedTile(tile: CityTile | undefined): void {

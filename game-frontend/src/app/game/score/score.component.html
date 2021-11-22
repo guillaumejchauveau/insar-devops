@@ -1,4 +1,6 @@
-<div class="score">
-  <h1> Score </h1>
-  <p> {{game.getScore()}} </p>
+<div role="progressbar"
+  style="--value:{{game.getScore()}};
+         --max-value:{{game.getScoreThreshold()}};
+         --percentage:{{getScorePercentage()}}">
 </div>
+

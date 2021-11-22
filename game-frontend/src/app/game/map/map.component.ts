@@ -9,6 +9,7 @@ import { GameMoveModel } from '../shared/game-move.model';
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css']
 })
+
 export class MapComponent implements OnInit {
   tiles: Array<Array<Tile>>;
 
