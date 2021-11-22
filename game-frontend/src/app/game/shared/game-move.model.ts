@@ -1,12 +1,13 @@
 import { UndoableCommand } from 'interacto';
-import { CityTile, NatureTile } from './tile.model';
+import { CityTile } from './tile.model';
 import { GameModel } from './game.model';
 
 export class GameMoveModel extends UndoableCommand {
-  private readonly x: number;
-  private readonly y: number;
-  private readonly gameModel: GameModel;
-  private readonly tile: CityTile | undefined;
+  private x: number;
+  private y: number;
+  private gameModel: GameModel;
+  private tile: CityTile | undefined;
+  private turn: number;
 
   public constructor(x: number, y: number, gameModel: GameModel) {
     super();
@@ -14,6 +15,7 @@ export class GameMoveModel extends UndoableCommand {
     this.y = y;
     this.gameModel = gameModel;
     this.tile = this.gameModel.getInventory().getSelectedTile();
+    this.turn = this.gameModel.getTurn();
   }
 
   private calcScore(): number {
@@ -27,7 +29,7 @@ export class GameMoveModel extends UndoableCommand {
   }
 
   protected execution(): void | Promise<void> {
-    this.gameModel.getInventory().useTile(this.tile as CityTile);
+    this.gameModel.getInventory().removeTile(this.tile as CityTile);
     this.gameModel.addToScore(this.calcScore());
     this.gameModel.getTiles()[this.x][this.y] = this.tile as CityTile;
   }
@@ -41,6 +43,21 @@ export class GameMoveModel extends UndoableCommand {
       this.gameModel.getTiles()[this.x][this.y] = this.gameModel.map.tiles[this.x * 10 + this.y];
       this.gameModel.addToScore(this.calcScore() * -1);
       this.gameModel.getInventory().addTile(this.tile);
+
+      const inventory = this.gameModel.getInventory();
+
+      // The number of turns between the current one and the one when the move was made
+      const nb = this.gameModel.getTurn() - this.turn;
+
+      // If the turn when the move was done is lower than the current turn,
+      // --> Go back to the previous turn and remove tiles from the inventory
+      if (nb) {
+        inventory.removeTile(CityTile.HOUSE, nb);
+        inventory.removeTile(CityTile.CIRCUS, nb);
+        inventory.removeTile(CityTile.WINDMILL, nb);
+        inventory.removeTile(CityTile.FOUNTAIN, nb);
+        this.gameModel.setTurn(this.turn);
+      }
     }
   }
 }

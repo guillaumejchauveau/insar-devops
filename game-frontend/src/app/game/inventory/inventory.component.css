@@ -1,7 +1,7 @@
 .inventory
 {
   margin: 10px;
-  position: fixed;
+  position: absolute;
   bottom: 0;
   padding: 10px;
   background: #E3E3E3;
