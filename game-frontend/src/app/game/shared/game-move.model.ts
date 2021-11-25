@@ -6,7 +6,7 @@ export class GameMoveModel extends UndoableCommand {
   private x: number;
   private y: number;
   private gameModel: GameModel;
-  private tile: CityTile | undefined;
+  private tile: CityTile;
   private turn: number;
 
   public constructor(x: number, y: number, gameModel: GameModel) {
@@ -14,14 +14,20 @@ export class GameMoveModel extends UndoableCommand {
     this.x = x;
     this.y = y;
     this.gameModel = gameModel;
-    this.tile = this.gameModel.getInventory().getSelectedTile();
+    const tileTemp =  this.gameModel.getInventory().getSelectedTile();
+    if (tileTemp === undefined) {
+      throw new Error('A GameMove Tile should not be undefined');
+    }
+    else {
+      this.tile = tileTemp;
+    }
     this.turn = this.gameModel.getTurn();
   }
 
   private calcScore(): number {
     let score = this.tile?.points ?? 0;
-    for (let i = Math.max(this.x - 1, 0); i <= Math.min(this.x + 1, 9); i++){
-      for (let j = Math.max(this.y - 1, 0); j <= Math.min(this.y + 1, 9); j++){
+    for (let i = Math.max(this.x - this.tile.radius, 0); i <= Math.min(this.x + this.tile.radius, 9); i++){
+      for (let j = Math.max(this.y - this.tile.radius, 0); j <= Math.min(this.y + this.tile.radius, 9); j++){
         score += this.tile?.getNeighbourPointsFor(this.gameModel.getTiles()[i][j]) ?? 0;
       }
     }
