@@ -14,10 +14,10 @@ export class NatureTile implements Tile {
 }
 
 export class CityTile implements Tile {
-  public static readonly CIRCUS: CityTile = new CityTile('circus', 1);
-  public static readonly FOUNTAIN: CityTile = new CityTile('fountain', 2);
-  public static readonly HOUSE: CityTile = new CityTile('house', 6);
-  public static readonly WINDMILL: CityTile = new CityTile('windmill', 4);
+  public static readonly CIRCUS: CityTile = new CityTile('circus', 1, 3);
+  public static readonly FOUNTAIN: CityTile = new CityTile('fountain', 2, 1);
+  public static readonly HOUSE: CityTile = new CityTile('house', 6, 1);
+  public static readonly WINDMILL: CityTile = new CityTile('windmill', 4, 1);
   private static readonly neighbourPointsMapping: Map<CityTile, Map<Tile, number>> = new Map([
     [CityTile.CIRCUS, new Map([
       [CityTile.CIRCUS, -25],
@@ -42,10 +42,12 @@ export class CityTile implements Tile {
   ]);
   public readonly name: string;
   public readonly points: number;
+  public readonly radius: number;
 
-  private constructor(name: string, points: number) {
+  private constructor(name: string, points: number, radius: number) {
     this.name = name;
     this.points = points;
+    this.radius = radius;
   }
 
   public getNeighbourPointsFor(tile: Tile): number {

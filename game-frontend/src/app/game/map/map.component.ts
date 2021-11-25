@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Tile, NatureTile } from '../shared/tile.model';
+import { Tile, NatureTile, CityTile } from '../shared/tile.model';
 import { GameService } from '../shared/game.service';
-import { PartialPointBinder, AnonCmd } from 'interacto';
+import { PartialPointBinder, AnonCmd, MouseEnter } from 'interacto';
 import { GameMoveModel } from '../shared/game-move.model';
+import { Expression } from '@angular/compiler';
 
 @Component({
   selector: 'app-map',
@@ -18,6 +19,45 @@ export class MapComponent implements OnInit {
   }
 
   ngOnInit(): void {
+  }
+
+  mouseEnter(x: number, y: number): void {
+    const tile = this.gameService.game.getInventory().getSelectedTile();
+    if (tile === undefined || this.gameService.game.getTiles()[x][y] !== NatureTile.GRASS) {
+      return;
+    }
+
+    let div;
+    let span;
+    let score;
+
+    for (let i = Math.max(x - tile.radius, 0); i <= Math.min(x + tile.radius, 9); i++){
+      for (let j = Math.max(y - tile.radius, 0); j <= Math.min(y + tile.radius, 9); j++){
+        div = document.getElementById(i + ' ' + j) as HTMLElement;
+        span = div.getElementsByTagName('span')[0];
+        score = tile.getNeighbourPointsFor(this.gameService.game.getTiles()[i][j]);
+        if (score !== 0) {
+          span.innerHTML = score.toString();
+        }
+      }
+    }
+
+    div = document.getElementById(x + ' ' + y) as HTMLElement;
+    span = div.getElementsByTagName('span')[0];
+    score = tile.points;
+    span.innerHTML = score.toString();
+  }
+
+  mouseLeave(x: number, y: number): void {
+    let div;
+    let span;
+    for (let i = Math.max(x - 3, 0); i <= Math.min(x + 3, 9); i++){
+      for (let j = Math.max(y - 3, 0); j <= Math.min(y + 3, 9); j++){
+        div = document.getElementById(i + ' ' + j) as HTMLElement;
+        span = div.getElementsByTagName('span')[0];
+        span.innerHTML = '';
+      }
+    }
   }
 
   public defineClickBinding(binder: PartialPointBinder | undefined): void {

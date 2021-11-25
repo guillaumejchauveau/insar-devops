@@ -1,12 +1,17 @@
 <div class="map">
   <ng-container *ngFor="let row of tiles; index as x">
     <ng-container *ngFor="let tile of row; index as y">
-      <img
-           class="tile {{tile.name}}"
-           [attr.data-x]=x
-           [attr.data-y]=y
-           [ioClick]="defineClickBinding"
-           [src]="'assets/' + tile.name + '.svg'">
+      <div id="{{x + ' ' + y}}" class="tile {{tile.name}}" (mouseleave)="mouseLeave(x,y)" (mouseenter)="mouseEnter(x,y)" >
+        <img
+          class="img"
+          [attr.data-x]=x
+          [attr.data-y]=y
+          [ioClick]="defineClickBinding"
+          [src]="'assets/' + tile.name + '.svg'">
+        <span class="score">
+
+        </span>
+      </div>
     </ng-container>
   </ng-container>
 </div>
