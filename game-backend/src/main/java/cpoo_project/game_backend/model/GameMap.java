@@ -17,9 +17,10 @@ public class GameMap {
   private Integer width;
   private Integer height;
   private List<NatureTile> startTiles;
-  private Map<String, GameReplay> replays;
+  private final Map<String, GameReplay> replays;
 
   public GameMap() {
+    this.replays = new HashMap<>();
   }
 
   public GameMap(final String name,
@@ -27,10 +28,10 @@ public class GameMap {
                  final Integer height,
                  final List<NatureTile> startTiles,
                  final Map<String, GameReplay> replays) {
-    this.name = name;
-    this.width = width;
-    this.height = height;
-    this.startTiles = List.copyOf(startTiles);
+    this.setName(name);
+    this.setWidth(width);
+    this.setHeight(height);
+    this.setStartTiles(startTiles);
     this.replays = new HashMap<>(replays);
   }
 
@@ -39,14 +40,26 @@ public class GameMap {
     return name;
   }
 
+  void setName(final String name) {
+    this.name = name;
+  }
+
   @XmlAttribute
   public Integer getWidth() {
     return width;
   }
 
+  void setWidth(final Integer width) {
+    this.width = width;
+  }
+
   @XmlAttribute
   public Integer getHeight() {
     return height;
+  }
+
+  void setHeight(final Integer height) {
+    this.height = height;
   }
 
   @XmlElement
@@ -57,6 +70,10 @@ public class GameMap {
     return Collections.unmodifiableList(startTiles);
   }
 
+  void setStartTiles(final List<NatureTile> startTiles) {
+    this.startTiles = List.copyOf(startTiles);
+  }
+
   public Map<String, GameReplay> getReplays() {
     if (replays == null) {
       return Map.of();
@@ -65,6 +82,9 @@ public class GameMap {
   }
 
   public Boolean registerReplay(final GameReplay replay) throws IllegalArgumentException {
+    if (replay.getMap() == null) {
+      replay.setMap(this);
+    }
     if (replay.getMap() != this) {
       throw new IllegalArgumentException();
     }

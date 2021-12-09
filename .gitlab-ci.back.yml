@@ -38,35 +38,6 @@ back:verify:
     paths:
       - $CI_PROJECT_DIR/.m2/repository/
 
-back:integration_test:
-  stage: check
-  image: $OPENJDK_SCHEMATHESIS_IMAGE
-  tags:
-    - ci
-  needs:
-    - back:build
-    - api:build
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - java -cp game-backend/target/game-backend-* cpoo_project.game_backend.Main &
-    # Wait for backend to be ready.
-    - for i in $(seq 10); do STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:4444/swagger.json) || true; if [ $STATUS -eq 200 ]; then break; fi; sleep 2; done
-    - |
-      schemathesis run \
-      --checks all \
-      --base-url=http://localhost:4444 \
-      --junit-xml=game-backend/schemathesis.xml \
-      --store-network-log=game-backend/schemathesis-log.yml \
-      --hypothesis-suppress-health-check filter_too_much,too_slow \
-      ./openapi.json
-  artifacts:
-    when: always
-    reports:
-      junit: game-backend/schemathesis.xml
-    paths:
-      - game-backend/schemathesis-log.yml
-
 back:report_jacoco:
   stage: report
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7

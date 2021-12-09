@@ -26,4 +26,9 @@
     <Match>
         <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS" />
     </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP" />
+        <Class name="cpoo_project.game_backend.model.GameReplay" />
+        <Method name="getMap" />
+    </Match>
 </FindBugsFilter>

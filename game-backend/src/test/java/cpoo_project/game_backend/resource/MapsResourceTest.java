@@ -1,6 +1,7 @@
 package cpoo_project.game_backend.resource;
 
 import com.github.hanleyt.JerseyExtension;
+import cpoo_project.game_backend.ApplicationBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,9 @@ public class MapsResourceTest {
   JerseyExtension jerseyExtension = new JerseyExtension(this::configureJersey);
 
   private Application configureJersey(ExtensionContext extensionContext) {
-    return new ResourceConfig(MapsResource.class);
+    return new ResourceConfig()
+      .packages("cpoo_project.game_backend.resource")
+      .register(ApplicationBinder.class);
   }
 
   @Test
@@ -29,6 +32,6 @@ public class MapsResourceTest {
       .path("/maps")
       .request()
       .get();
-    Assertions.assertEquals(res.getStatus(), Response.Status.OK.getStatusCode());
+    Assertions.assertEquals(Response.Status.OK.getStatusCode(), res.getStatus());
   }
 }

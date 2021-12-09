@@ -18,18 +18,26 @@ public class GameReplay {
   }
 
   public GameReplay(final GameMap map, final String playerName, final List<GameMove> moves) {
-    this.map = map;
-    this.playerName = playerName;
-    this.moves = List.copyOf(moves);
+    this.setMap(map);
+    this.setPlayerName(playerName);
+    this.setMoves(moves);
   }
 
   public GameMap getMap() {
     return map;
   }
 
+  void setMap(final GameMap map) {
+    this.map = map;
+  }
+
   @XmlElement
   public String getPlayerName() {
     return playerName;
+  }
+
+  void setPlayerName(final String playerName) {
+    this.playerName = playerName;
   }
 
   @XmlElement
@@ -38,6 +46,10 @@ public class GameReplay {
       return List.of();
     }
     return Collections.unmodifiableList(moves);
+  }
+
+  void setMoves(final List<GameMove> moves) {
+    this.moves = List.copyOf(moves);
   }
 
   public Integer getScore() {
