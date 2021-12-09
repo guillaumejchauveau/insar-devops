@@ -3,10 +3,13 @@ package cpoo_project.game_backend.resource;
 import cpoo_project.game_backend.model.GameMap;
 import cpoo_project.game_backend.model.GameReplay;
 import cpoo_project.game_backend.model.Error;
+import cpoo_project.game_backend.service.GameMapStorage;
+import cpoo_project.game_backend.service.GameReplayStorage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -22,21 +25,28 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Api
 @Singleton
 @Path("maps")
 public class MapsResource {
+  @Inject
+  protected GameMapStorage mapStorage;
+  @Inject
+  protected GameReplayStorage replayStorage;
+
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @ApiResponses({
     @ApiResponse(code = 200, message = "OK", response = String.class, responseContainer = "List")
   })
   public List<String> getMapNames() {
-    return new ArrayList<>();
+    return mapStorage.stream().map(GameMap::getName).collect(Collectors.toList());
   }
 
   @POST
@@ -45,9 +55,15 @@ public class MapsResource {
     @ApiResponse(code = 201, message = "Created", response = GameMap.class)
   })
   public Response generateMap() {
+    final var map = new GameMap("generated", 0, 0, List.of(), Map.of());
+    try {
+      mapStorage.put(map);
+    } catch (IOException | JAXBException e) {
+      throw new RuntimeException(e);
+    }
     return Response
       .status(Response.Status.CREATED)
-      .entity(new GameMap("test", 0, 0, List.of(), Map.of()))
+      .entity(map)
       .build();
   }
 
@@ -61,7 +77,7 @@ public class MapsResource {
   public GameMap getMapByName(
     @PathParam("mapName") @NotNull final String mapName)
     throws NotFoundException {
-    throw new NotFoundException();
+    return mapStorage.get(mapName).orElseThrow(NotFoundException::new);
   }
 
   @GET
@@ -76,7 +92,12 @@ public class MapsResource {
     @QueryParam("sortBy") final String sortBy,
     @QueryParam("limit") final Integer limit)
     throws NotFoundException {
-    throw new NotFoundException();
+    return mapStorage.getReplays(mapName)
+      .orElseThrow(NotFoundException::new)
+      .sorted((a, b) -> "playerName".equals(sortBy) ? a.getPlayerName().compareTo(b.getPlayerName()) : a.getScore().compareTo(b.getScore()))
+      .limit(limit == null ? Long.MAX_VALUE : limit)
+      .map(GameReplay::getPlayerName)
+      .collect(Collectors.toList());
   }
 
   @GET
@@ -90,7 +111,8 @@ public class MapsResource {
     @PathParam("mapName") @NotNull final String mapName,
     @PathParam("playerName") @NotNull final String playerName)
     throws NotFoundException {
-    throw new NotFoundException();
+    return mapStorage.getReplay(mapName, playerName)
+      .orElseThrow(NotFoundException::new);
   }
 
   @PUT
@@ -108,6 +130,15 @@ public class MapsResource {
     @PathParam("playerName") @NotNull final String playerName,
     @NotNull @Valid final GameReplay gameReplay)
     throws NotFoundException, BadRequestException {
-    throw new NotFoundException();
+    final var map = mapStorage.get(mapName).orElseThrow(NotFoundException::new);
+    if (map.registerReplay(gameReplay)) {
+      try {
+        replayStorage.put(gameReplay);
+      } catch (IOException | JAXBException e) {
+        throw new RuntimeException(e);
+      }
+      return Response.status(Response.Status.CREATED).entity(gameReplay).build();
+    }
+    return Response.status(Response.Status.NO_CONTENT).build();
   }
 }

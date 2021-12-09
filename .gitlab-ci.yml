@@ -15,7 +15,6 @@ stages:
 variables:
   MAVEN_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/maven:3.8-openjdk-11"
   NODE_CHROME_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/node-chrome"
-  OPENJDK_SCHEMATHESIS_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/openjdk-schemathesis"
   SWAGGER_CODEGEN_CLI_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/swagger-codegen-cli"
   CHECKSTYLE_REPORT_CODECLIMATE_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/checkstyle-report-codeclimate"
   DOCKER_IMAGE: "$CI_REGISTRY/$CI_PROJECT_PATH/docker:20.10"
@@ -76,8 +75,6 @@ register-images:
     - docker push $CHECKSTYLE_REPORT_CODECLIMATE_IMAGE
     - docker build -t $NODE_CHROME_IMAGE node-chrome
     - docker push $NODE_CHROME_IMAGE
-    - docker build -t $OPENJDK_SCHEMATHESIS_IMAGE openjdk-schemathesis
-    - docker push $OPENJDK_SCHEMATHESIS_IMAGE
   when: manual
 
 ####
@@ -141,8 +138,6 @@ back:publish:
   # Requires the tests to pass and the JAR from the build job.
   needs:
     - job: back:verify
-      artifacts: false
-    - job: back:integration_test
       artifacts: false
     - job: back:build
       artifacts: true
