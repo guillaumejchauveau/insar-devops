@@ -3,6 +3,7 @@ package cpoo_project.game_backend.resource;
 import cpoo_project.game_backend.model.GameMap;
 import cpoo_project.game_backend.model.GameReplay;
 import cpoo_project.game_backend.model.Error;
+import cpoo_project.game_backend.model.NatureTile;
 import cpoo_project.game_backend.service.GameMapStorage;
 import cpoo_project.game_backend.service.GameReplayStorage;
 import io.swagger.annotations.Api;
@@ -25,16 +26,19 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Api
 @Singleton
 @Path("maps")
 public class MapsResource {
+  private final Random random = new Random();
+
   @Inject
   protected GameMapStorage mapStorage;
   @Inject
@@ -55,10 +59,10 @@ public class MapsResource {
     @ApiResponse(code = 201, message = "Created", response = GameMap.class)
   })
   public Response generateMap() {
-    final var map = new GameMap("generated", 0, 0, List.of(), Map.of());
+    final var map = new GameMap(String.valueOf(random.nextInt()), 10, 10, Stream.generate(() -> NatureTile.GRASS).limit(100).collect(Collectors.toList()), Map.of());
     try {
       mapStorage.put(map);
-    } catch (IOException | JAXBException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
     return Response
@@ -134,7 +138,7 @@ public class MapsResource {
     if (map.registerReplay(gameReplay)) {
       try {
         replayStorage.put(gameReplay);
-      } catch (IOException | JAXBException e) {
+      } catch (IOException e) {
         throw new RuntimeException(e);
       }
       return Response.status(Response.Status.CREATED).entity(gameReplay).build();
