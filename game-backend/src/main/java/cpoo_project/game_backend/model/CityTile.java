@@ -68,6 +68,9 @@ public enum CityTile implements Tile {
   }
 
   public Integer getNeighbourPointsFor(final Tile tile) {
+    if (tile == null) {
+      return 0;
+    }
     return neighbourPoints.getOrDefault(this, Map.of()).getOrDefault(tile, 0);
   }
 }

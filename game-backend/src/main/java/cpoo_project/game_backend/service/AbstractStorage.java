@@ -1,6 +1,8 @@
 package cpoo_project.game_backend.service;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,6 +26,8 @@ public abstract class AbstractStorage<T> {
       System.out.println("Created dir " + this.rootDirectory);
     }
     this.jsonProvider = new ObjectMapper();
+    this.jsonProvider.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
+    this.jsonProvider.registerModule(new JaxbAnnotationModule());
 
     this.entities = new HashMap<>();
 

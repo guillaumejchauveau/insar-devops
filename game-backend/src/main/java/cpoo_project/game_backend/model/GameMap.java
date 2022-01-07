@@ -2,21 +2,21 @@ package cpoo_project.game_backend.model;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.NONE)
+@XmlAccessorType(XmlAccessType.FIELD)
 public class GameMap {
   private String name;
   private Integer width;
   private Integer height;
   private List<NatureTile> startTiles;
+  @XmlTransient
   private final Map<String, GameReplay> replays;
 
   public GameMap() {
@@ -35,7 +35,6 @@ public class GameMap {
     this.replays = new HashMap<>(replays);
   }
 
-  @XmlAttribute
   public String getName() {
     return name;
   }
@@ -44,7 +43,6 @@ public class GameMap {
     this.name = name;
   }
 
-  @XmlAttribute
   public Integer getWidth() {
     return width;
   }
@@ -53,7 +51,6 @@ public class GameMap {
     this.width = width;
   }
 
-  @XmlAttribute
   public Integer getHeight() {
     return height;
   }
@@ -62,7 +59,6 @@ public class GameMap {
     this.height = height;
   }
 
-  @XmlElement
   public List<NatureTile> getStartTiles() {
     if (startTiles == null) {
       return List.of();
@@ -75,9 +71,6 @@ public class GameMap {
   }
 
   public Map<String, GameReplay> getReplays() {
-    if (replays == null) {
-      return Map.of();
-    }
     return Collections.unmodifiableMap(replays);
   }
 
