@@ -134,6 +134,7 @@ public class MapsResource {
     @PathParam("playerName") @NotNull final String playerName,
     @NotNull @Valid final GameReplay gameReplay)
     throws NotFoundException, BadRequestException {
+    gameReplay.setPlayerName(playerName);
     final var map = mapStorage.get(mapName).orElseThrow(NotFoundException::new);
     if (map.registerReplay(gameReplay)) {
       try {

@@ -196,19 +196,14 @@ components:
     GameReplay:
       type: object
       properties:
+        playerName:
+          type: string
         moves:
           type: array
           items:
             $ref: "#/components/schemas/GameMove"
       required:
         - moves
-    Player:
-      type: object
-      properties:
-        name:
-          type: string
-      required:
-        - name
     GameMove:
       type: object
       properties:

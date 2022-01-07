@@ -31,8 +31,8 @@ export class MapComponent implements OnInit {
     let span;
     let score;
 
-    for (let i = Math.max(x - tile.radius, 0); i <= Math.min(x + tile.radius, 9); i++){
-      for (let j = Math.max(y - tile.radius, 0); j <= Math.min(y + tile.radius, 9); j++){
+    for (let i = Math.max(x - tile.radius, 0); i <= Math.min(x + tile.radius, this.gameService.game.map.width - 1); i++){
+      for (let j = Math.max(y - tile.radius, 0); j <= Math.min(y + tile.radius, this.gameService.game.map.height - 1); j++){
         div = document.getElementById(i + ' ' + j) as HTMLElement;
         span = div.getElementsByTagName('span')[0];
         score = tile.getNeighbourPointsFor(this.gameService.game.getTiles()[i][j]);
@@ -51,8 +51,8 @@ export class MapComponent implements OnInit {
   mouseLeave(x: number, y: number): void {
     let div;
     let span;
-    for (let i = Math.max(x - 3, 0); i <= Math.min(x + 3, 9); i++){
-      for (let j = Math.max(y - 3, 0); j <= Math.min(y + 3, 9); j++){
+    for (let i = Math.max(x - 3, 0); i <= Math.min(x + 3, this.gameService.game.map.width - 1); i++){
+      for (let j = Math.max(y - 3, 0); j <= Math.min(y + 3, this.gameService.game.map.height - 1); j++){
         div = document.getElementById(i + ' ' + j) as HTMLElement;
         span = div.getElementsByTagName('span')[0];
         span.innerHTML = '';

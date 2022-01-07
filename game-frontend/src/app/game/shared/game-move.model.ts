@@ -26,8 +26,8 @@ export class GameMoveModel extends UndoableCommand {
 
   private calcScore(): number {
     let score = this.tile?.points ?? 0;
-    for (let i = Math.max(this.x - this.tile.radius, 0); i <= Math.min(this.x + this.tile.radius, 9); i++){
-      for (let j = Math.max(this.y - this.tile.radius, 0); j <= Math.min(this.y + this.tile.radius, 9); j++){
+    for (let i = Math.max(this.x - this.tile.radius, 0); i <= Math.min(this.x + this.tile.radius, this.gameModel.map.width - 1); i++){
+      for (let j = Math.max(this.y - this.tile.radius, 0); j <= Math.min(this.y + this.tile.radius, this.gameModel.map.height - 1); j++){
         score += this.tile?.getNeighbourPointsFor(this.gameModel.getTiles()[i][j]) ?? 0;
       }
     }
@@ -46,7 +46,7 @@ export class GameMoveModel extends UndoableCommand {
 
   undo(): void {
     if (this.tile !== undefined) {
-      this.gameModel.getTiles()[this.x][this.y] = this.gameModel.map.tiles[this.x * 10 + this.y];
+      this.gameModel.getTiles()[this.x][this.y] = this.gameModel.map.tiles[this.x * this.gameModel.map.width + this.y];
       this.gameModel.addToScore(this.calcScore() * -1);
       this.gameModel.getInventory().addTile(this.tile);
 
