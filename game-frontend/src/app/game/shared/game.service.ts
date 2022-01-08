@@ -6,6 +6,8 @@ import { Tile, NatureTile } from './tile.model';
 import { MapModel } from '../map/map.model';
 import { UndoHistory } from 'interacto';
 import { GameMoveModel } from './game-move.model';
+import { Router } from '@angular/router';
+import { waitForAsync } from '@angular/core/testing';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +17,7 @@ export class GameService {
   private url = '/api/';
   public playername: string;
 
-  constructor(private http: HttpClient, private undoHistory: UndoHistory) {
+  constructor(private http: HttpClient, private undoHistory: UndoHistory, private router: Router) {
     const gameMapManager = new GameMapManagerService();
     const gameMap = gameMapManager.generateMap();
     this.playername = this.generateRandomName();
@@ -99,6 +101,18 @@ export class GameService {
       .catch(_ => {
         return [];
       });
+    this.router.navigate(['']);
+  }
+
+  public checkEndGame(): void {
+    if (this.game.noMoreSpace() || this.game.getInventory().isEmpty()) {
+      window.alert('Partie terminée');
+      setTimeout(() =>
+      {
+        this.endGame();
+      },
+      100);
+    }
   }
 
   public changeGame(game: GameModel): void {

@@ -78,6 +78,8 @@ export class MapComponent implements OnInit {
         } else {
           return new AnonCmd(() => {});
         }
+      }).end(i => {
+        this.gameService.checkEndGame();
       })
       .bind();
   }

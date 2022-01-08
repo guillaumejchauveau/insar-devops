@@ -35,8 +35,8 @@ export class GameMoveModel extends UndoableCommand {
   }
 
   protected execution(): void | Promise<void> {
-    this.gameModel.getInventory().removeTile(this.tile as CityTile);
     this.gameModel.addToScore(this.calcScore());
+    this.gameModel.getInventory().removeTile(this.tile as CityTile);
     this.gameModel.getTiles()[this.x][this.y] = this.tile as CityTile;
   }
 
