@@ -2,7 +2,7 @@ package cpoo_project.game_backend.resource;
 
 import com.github.hanleyt.JerseyExtension;
 import cpoo_project.game_backend.model.GameMap;
-import cpoo_project.game_backend.model.GameReplay;
+import cpoo_project.game_backend.model.GameMapBuilder;
 import cpoo_project.game_backend.model.NatureTile;
 import cpoo_project.game_backend.service.GameMapStorage;
 import cpoo_project.game_backend.service.GameReplayStorage;
@@ -28,9 +28,7 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ExtendWith(MockitoExtension.class)
@@ -73,8 +71,8 @@ public class MapsResourceTest {
   @Test
   public void testGetMapNames(WebTarget target) {
     Mockito.doReturn(Stream.of(
-      new GameMap("map1", 10, 10, List.of(), Map.of()),
-      new GameMap("map2", 10, 10, List.of(), Map.of())
+      new GameMapBuilder().withName("map1").build(),
+      new GameMapBuilder().withName("map2").build()
     )).when(mapStorage).stream();
 
     final Response res = target
@@ -90,9 +88,7 @@ public class MapsResourceTest {
   @Test
   public void testGetMap(WebTarget target) {
     Mockito.doReturn(
-      Optional.of(new GameMap("map1", 10, 10,
-        Stream.generate(() -> NatureTile.GRASS).limit(100).collect(Collectors.toList()),
-        Map.of()))
+      Optional.of(new GameMapBuilder().withName("map1").build())
     ).when(mapStorage).get("map1");
 
     final Response res = target

@@ -11,10 +11,10 @@ public class GameMove {
   private Integer y;
   private CityTile tile;
 
-  public GameMove() {
+  GameMove() {
   }
 
-  public GameMove(final Integer x, final Integer y, final CityTile tile) {
+  GameMove(final Integer x, final Integer y, final CityTile tile) {
     this.x = x;
     this.y = y;
     this.tile = tile;

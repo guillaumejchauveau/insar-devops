@@ -5,20 +5,21 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GameReplayTest {
   @Test
   public void testScoreComputationStateConversion() {
-    final var map = new GameMap("map1", 5, 5, List.of(
-      NatureTile.TREE, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.WATER,
-      NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
-      NatureTile.GRASS, NatureTile.WATER, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
-      NatureTile.TREE, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
-      NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS
-    ), Map.of());
+    final var map = new GameMapBuilder()
+      .withName("map1")
+      .withDimensions(5, 5)
+      .withStartTiles(List.of(
+        NatureTile.TREE, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.WATER,
+        NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
+        NatureTile.GRASS, NatureTile.WATER, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
+        NatureTile.TREE, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
+        NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS
+      ))
+      .build();
     final var comp = new GameReplay.ScoreComputation(map);
     Assertions.assertEquals(NatureTile.TREE, comp.state[0][0]);
     Assertions.assertEquals(NatureTile.WATER, comp.state[0][4]);
@@ -28,9 +29,7 @@ public class GameReplayTest {
 
   @Test
   public void testScoreComputation() {
-    final var map = new GameMap("map1", 5, 5,
-      Stream.generate(() -> NatureTile.GRASS).limit(5 * 5).collect(Collectors.toList()),
-      Map.of());
+    final var map = new GameMapBuilder().withName("map1").build();
     final var replay = new GameReplay(map, "player1", List.of(
       new GameMove(0, 0, CityTile.HOUSE)
     ));

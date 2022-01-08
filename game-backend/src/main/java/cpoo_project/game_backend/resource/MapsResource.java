@@ -1,11 +1,13 @@
 package cpoo_project.game_backend.resource;
 
 import cpoo_project.game_backend.model.GameMap;
+import cpoo_project.game_backend.model.GameMapBuilder;
 import cpoo_project.game_backend.model.GameReplay;
-import cpoo_project.game_backend.model.NatureTile;
 import cpoo_project.game_backend.model.Error;
 import cpoo_project.game_backend.service.GameMapStorage;
 import cpoo_project.game_backend.service.GameReplayStorage;
+import cpoo_project.game_backend.utils.RandomEllipticalPatchGameMapStartTilesSupplier;
+import cpoo_project.game_backend.utils.RandomGameMapNameSupplier;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -28,21 +30,24 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Api
 @Singleton
 @Path("maps")
 public class MapsResource {
-  private final Random random = new Random();
-
   @Inject
   protected GameMapStorage mapStorage;
   @Inject
   protected GameReplayStorage replayStorage;
+  protected GameMapBuilder gameMapBuilder;
+
+  public MapsResource() {
+    gameMapBuilder = new GameMapBuilder()
+      .withNameSupplier(new RandomGameMapNameSupplier(candidate -> !mapStorage.contains(candidate)))
+      .withStartTilesSupplier(new RandomEllipticalPatchGameMapStartTilesSupplier())
+      .withDimensions(10, 10);
+  }
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -59,7 +64,7 @@ public class MapsResource {
     @ApiResponse(code = 201, message = "Created", response = GameMap.class)
   })
   public Response generateMap() {
-    final var map = new GameMap(String.valueOf(random.nextInt()), 10, 10, Stream.generate(() -> NatureTile.GRASS).limit(100).collect(Collectors.toList()), Map.of());
+    final var map = gameMapBuilder.build();
     try {
       mapStorage.put(map);
     } catch (IOException e) {
