@@ -11,7 +11,7 @@ export class ScoreComponent implements OnInit {
   game: GameModel;
 
   constructor(gameService: GameService) {
-    this.game = gameService.game;
+    this.game = gameService.getGame();
   }
 
   getScorePercentage(): number {

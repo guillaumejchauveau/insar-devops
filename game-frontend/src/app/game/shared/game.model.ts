@@ -7,7 +7,7 @@ export class GameModel {
   private turn: number;
   private playername: string;
   private inventory: InventoryModel;
-  public readonly map: MapModel;
+  public map: MapModel;
   private tiles: Array<Array<Tile>>;
 
   public constructor(map: MapModel, playername: string) {
@@ -72,5 +72,13 @@ export class GameModel {
 
   public getTiles(): Array<Array<Tile>> {
     return this.tiles;
+  }
+
+  public getPlayerName(): string {
+    return this.playername;
+  }
+
+  public setPlayerName(name: string): void {
+    this.playername = name;
   }
 }

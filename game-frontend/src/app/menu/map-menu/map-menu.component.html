@@ -1,0 +1,13 @@
+<div class="mapList">
+
+  <div class="playername-area">
+    <p>Player name :</p>
+    <textarea id="playername" [textContent]="this.gameService.playername"></textarea>
+  </div>
+
+  <button class="random" (click)="randomMap()">Random map</button>
+
+  <ng-container *ngFor="let name of mapNames">
+    <button (click)="selectMap(name)">{{name}}</button>
+  </ng-container>
+</div>

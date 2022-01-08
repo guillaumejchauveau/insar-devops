@@ -3,17 +3,19 @@ import { MapModel } from '../map/map.model';
 
 export class GameReplayModel {
   private readonly playerName: string;
-  private readonly playerMoves: Array<GameMoveModel>;
+  private readonly moves: Array<GameMoveModel>;
+  private readonly score: number;
   private readonly map: MapModel;
 
-  public constructor(playerName: string, map: MapModel) {
+  public constructor(playerName: string, map: MapModel, score: number, moves: Array<GameMoveModel>) {
     this.playerName = playerName;
-    this.playerMoves = [];
+    this.moves = moves;
+    this.score = score;
     this.map = map;
   }
 
   public getScore(): number {
-    return 0; // TODO : calculer le score
+    return this.score;
   }
 
   public getPlayerName(): string {
@@ -21,7 +23,7 @@ export class GameReplayModel {
   }
 
   public getMoves(): Array<GameMoveModel> {
-    return this.playerMoves;
+    return this.moves;
   }
 
   public getMap(): MapModel {
