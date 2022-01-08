@@ -66,4 +66,16 @@ export class GameMoveModel extends UndoableCommand {
       }
     }
   }
+
+  public getX(): number {
+    return this.x;
+  }
+
+  public getY(): number {
+    return this.y;
+  }
+
+  public getTile(): CityTile {
+    return this.tile;
+  }
 }

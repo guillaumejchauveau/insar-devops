@@ -3,6 +3,7 @@ package cpoo_project.game_backend.model;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import java.awt.Point;
 import java.util.Arrays;
@@ -56,6 +57,7 @@ public class GameReplay {
     }
   }
 
+  @XmlAttribute
   public Integer getScore() {
     return moves.stream().collect(() -> new ScoreComputation(map),
       (comp, move) -> {

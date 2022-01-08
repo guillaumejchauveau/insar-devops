@@ -46,7 +46,7 @@ export class InventoryComponent implements OnInit {
         }
 
         return new AnonCmd(() => {
-          this.gameService.game.getInventory().setSelectedTile(tile);
+          this.gameService.getGame().getInventory().setSelectedTile(tile);
         });
       })
       .bind();

@@ -2,8 +2,8 @@ package cpoo_project.game_backend.resource;
 
 import cpoo_project.game_backend.model.GameMap;
 import cpoo_project.game_backend.model.GameReplay;
-import cpoo_project.game_backend.model.Error;
 import cpoo_project.game_backend.model.NatureTile;
+import cpoo_project.game_backend.model.Error;
 import cpoo_project.game_backend.service.GameMapStorage;
 import cpoo_project.game_backend.service.GameReplayStorage;
 import io.swagger.annotations.Api;

@@ -1,0 +1,19 @@
+#scorebtn {
+  position: absolute;
+  right: 50px;
+  top: 150px;
+  font-size: 25px;
+}
+
+#scoreModal, .modal-dialog, .modal-content, .modal-header, .modal-body, table {
+  width: 100%;
+}
+
+.modal-title {
+  font-size : 40px;
+}
+
+.modal-body {
+  font-size: 30px;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}

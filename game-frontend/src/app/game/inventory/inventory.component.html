@@ -1,6 +1,6 @@
 <div class="inventory">
-  <ng-container *ngFor="let tile of gameService.game.getInventory().getTiles() | keyvalue">
-    <div [className]="tile.key === gameService.game.getInventory().getSelectedTile() ? 'selected inventoryTile' : 'inventoryTile'">
+  <ng-container *ngFor="let tile of gameService.getGame().getInventory().getTiles() | keyvalue">
+    <div [className]="tile.key === gameService.getGame().getInventory().getSelectedTile() ? 'selected inventoryTile' : 'inventoryTile'">
       <img
         class='img'
         [attr.data-name]="tile.key.name"

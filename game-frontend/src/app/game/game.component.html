@@ -3,4 +3,8 @@
 <app-score></app-score>
 <button ioUndo>Undo</button>
 <button ioRedo>Redo</button>
-
+<button class="end btn" (click)='endGame()'>
+  Terminer la partie
+</button>
+<p class="playername">{{gameService.getGame().getPlayerName()}}</p>
+<app-score-modal></app-score-modal>
