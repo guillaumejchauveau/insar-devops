@@ -1,4 +1,5 @@
 import { CityTile } from '../shared/tile.model';
+import { GameService } from '../shared/game.service';
 
 export class InventoryModel {
   private tiles: Map<CityTile, number> = new Map();
@@ -22,6 +23,16 @@ export class InventoryModel {
     if (this.tiles.get(tile) === 0) {
       this.selectedTile = undefined;
     }
+  }
+
+  public isEmpty(): boolean {
+    let bool = true;
+    this.tiles.forEach((value) => {
+      if (value !== 0) {
+        bool = false;
+      }
+    });
+    return bool;
   }
 
   public containsTile(tile: CityTile): boolean {

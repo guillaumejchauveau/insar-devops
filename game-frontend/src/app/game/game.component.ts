@@ -10,8 +10,7 @@ import { Router } from '@angular/router';
 })
 export class GameComponent implements OnInit {
 
-  constructor(public gameService: GameService, private router: Router) {
-
+  constructor(public gameService: GameService) {
   }
 
   ngOnInit(): void {
@@ -19,6 +18,5 @@ export class GameComponent implements OnInit {
 
   public endGame(): void {
     this.gameService.endGame();
-    this.router.navigate(['']);
   }
 }

@@ -1,6 +1,6 @@
 import { InventoryModel } from '../inventory/inventory.model';
 import { MapModel } from '../map/map.model';
-import { CityTile, Tile } from './tile.model';
+import { CityTile, Tile, NatureTile } from './tile.model';
 
 export class GameModel {
   private score: number;
@@ -80,5 +80,17 @@ export class GameModel {
 
   public setPlayerName(name: string): void {
     this.playername = name;
+  }
+
+  public noMoreSpace(): boolean {
+    let bool = true;
+    this.tiles.forEach((value) => {
+      value.forEach(tile => {
+        if (tile === NatureTile.GRASS) {
+          bool = false;
+        }
+      });
+    });
+    return bool;
   }
 }
