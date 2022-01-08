@@ -198,6 +198,8 @@ components:
       properties:
         playerName:
           type: string
+        score:
+          type: number
         moves:
           type: array
           items:

@@ -19,44 +19,34 @@ public class GameMap {
   @XmlTransient
   private final Map<String, GameReplay> replays;
 
-  public GameMap() {
+  GameMap() {
     this.replays = new HashMap<>();
   }
 
-  public GameMap(final String name,
-                 final Integer width,
-                 final Integer height,
-                 final List<NatureTile> startTiles,
-                 final Map<String, GameReplay> replays) {
-    this.setName(name);
-    this.setWidth(width);
-    this.setHeight(height);
-    this.setStartTiles(startTiles);
-    this.replays = new HashMap<>(replays);
+  GameMap(final String name,
+          final Integer width,
+          final Integer height,
+          final List<NatureTile> startTiles) {
+    if (startTiles.size() != width * height) {
+      throw new IllegalArgumentException();
+    }
+    this.name = name;
+    this.width = width;
+    this.height = height;
+    this.startTiles = List.copyOf(startTiles);
+    this.replays = new HashMap<>();
   }
 
   public String getName() {
     return name;
   }
 
-  void setName(final String name) {
-    this.name = name;
-  }
-
   public Integer getWidth() {
     return width;
   }
 
-  void setWidth(final Integer width) {
-    this.width = width;
-  }
-
   public Integer getHeight() {
     return height;
-  }
-
-  void setHeight(final Integer height) {
-    this.height = height;
   }
 
   public List<NatureTile> getStartTiles() {
@@ -64,10 +54,6 @@ public class GameMap {
       return List.of();
     }
     return Collections.unmodifiableList(startTiles);
-  }
-
-  void setStartTiles(final List<NatureTile> startTiles) {
-    this.startTiles = List.copyOf(startTiles);
   }
 
   public Map<String, GameReplay> getReplays() {

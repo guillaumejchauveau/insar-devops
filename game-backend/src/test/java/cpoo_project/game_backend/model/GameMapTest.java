@@ -4,16 +4,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GameMapTest {
   @Test
   public void testReplayRegistration() {
-    final var map = new GameMap("map1", 5, 5,
-      Stream.generate(() -> NatureTile.GRASS).limit(5 * 5).collect(Collectors.toList()),
-      Map.of());
+    final var map = new GameMapBuilder().withName("map1").build();
     final var replay = new GameReplay(map, "player1", List.of(
       new GameMove(0, 0, CityTile.HOUSE)
     ));
@@ -33,7 +28,7 @@ public class GameMapTest {
     Assertions.assertTrue(map.getReplays().containsKey("player1"));
     Assertions.assertEquals(replay, map.getReplays().get("player1"));
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      map.registerReplay(new GameReplay(new GameMap("map2", 0, 0, List.of(), Map.of()), "player1", List.of()));
+      map.registerReplay(new GameReplay(new GameMap(), "player1", List.of()));
     });
     Assertions.assertTrue(map.registerReplay(replay2));
     Assertions.assertTrue(map.getReplays().containsKey("player1"));

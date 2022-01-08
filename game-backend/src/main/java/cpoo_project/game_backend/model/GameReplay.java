@@ -19,10 +19,10 @@ public class GameReplay {
   private String playerName;
   private List<GameMove> moves;
 
-  public GameReplay() {
+  GameReplay() {
   }
 
-  public GameReplay(final GameMap map, final String playerName, final List<GameMove> moves) {
+  GameReplay(final GameMap map, final String playerName, final List<GameMove> moves) {
     this.setMap(map);
     this.setPlayerName(playerName);
     this.moves = List.copyOf(moves);

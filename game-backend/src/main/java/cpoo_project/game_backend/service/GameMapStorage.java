@@ -37,4 +37,8 @@ public class GameMapStorage extends AbstractStorage<GameMap> {
   public void put(final GameMap map) throws IOException {
     this.put(map.getName(), map);
   }
+
+  public Boolean contains(final String mapName) {
+    return this.entities.containsKey(mapName);
+  }
 }
