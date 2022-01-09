@@ -22,15 +22,14 @@ public abstract class AbstractStorage<T> {
   protected AbstractStorage(final Path rootDirectory, final Class<T> clazz) throws IOException {
     this.rootDirectory = rootDirectory;
     this.clazz = clazz;
-    if (this.rootDirectory.toFile().mkdirs()) {
-      System.out.println("Created dir " + this.rootDirectory);
-    }
     this.jsonProvider = new ObjectMapper();
     this.jsonProvider.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
     this.jsonProvider.registerModule(new JaxbAnnotationModule());
 
     this.entities = new HashMap<>();
-
+    if (!Files.exists(this.rootDirectory)) {
+      return;
+    }
     Files.walk(this.rootDirectory)
       .map(path -> this.rootDirectory.relativize(path).toString())
       .filter(path -> path.endsWith(".json"))

@@ -6,8 +6,6 @@ import cpoo_project.game_backend.model.GameReplay;
 import cpoo_project.game_backend.model.Error;
 import cpoo_project.game_backend.service.GameMapStorage;
 import cpoo_project.game_backend.service.GameReplayStorage;
-import cpoo_project.game_backend.utils.RandomEllipticalPatchGameMapStartTilesSupplier;
-import cpoo_project.game_backend.utils.RandomGameMapNameSupplier;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -40,14 +38,8 @@ public class MapsResource {
   protected GameMapStorage mapStorage;
   @Inject
   protected GameReplayStorage replayStorage;
+  @Inject
   protected GameMapBuilder gameMapBuilder;
-
-  public MapsResource() {
-    gameMapBuilder = new GameMapBuilder()
-      .withNameSupplier(new RandomGameMapNameSupplier(candidate -> !mapStorage.contains(candidate)))
-      .withStartTilesSupplier(new RandomEllipticalPatchGameMapStartTilesSupplier())
-      .withDimensions(10, 10);
-  }
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -103,7 +95,7 @@ public class MapsResource {
     throws NotFoundException {
     return mapStorage.getReplays(mapName)
       .orElseThrow(NotFoundException::new)
-      .sorted((a, b) -> "playerName".equals(sortBy) ? a.getPlayerName().compareTo(b.getPlayerName()) : a.getScore().compareTo(b.getScore()))
+      .sorted((a, b) -> "playerName".equals(sortBy) ? a.getPlayerName().compareTo(b.getPlayerName()) : b.getScore().compareTo(a.getScore()))
       .limit(limit == null ? Long.MAX_VALUE : limit)
       .map(GameReplay::getPlayerName)
       .collect(Collectors.toList());

@@ -9,5 +9,8 @@ target
 .project
 .settings
 gen
-maps
+maps/*
 replays
+!/maps/Miskatonic.json
+!/maps/Rorikstead.json
+!/maps/Valenwood.json
