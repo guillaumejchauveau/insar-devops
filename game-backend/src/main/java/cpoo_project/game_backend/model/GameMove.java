@@ -14,7 +14,7 @@ public class GameMove {
   GameMove() {
   }
 
-  GameMove(final Integer x, final Integer y, final CityTile tile) {
+  public GameMove(final Integer x, final Integer y, final CityTile tile) {
     this.x = x;
     this.y = y;
     this.tile = tile;

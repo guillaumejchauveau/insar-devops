@@ -18,11 +18,13 @@ public class GameReplay {
   private GameMap map;
   private String playerName;
   private List<GameMove> moves;
+  @XmlTransient
+  private Integer score;
 
   GameReplay() {
   }
 
-  GameReplay(final GameMap map, final String playerName, final List<GameMove> moves) {
+  public GameReplay(final GameMap map, final String playerName, final List<GameMove> moves) {
     this.setMap(map);
     this.setPlayerName(playerName);
     this.moves = List.copyOf(moves);
@@ -59,25 +61,28 @@ public class GameReplay {
 
   @XmlAttribute
   public Integer getScore() {
-    return moves.stream().collect(() -> new ScoreComputation(map),
-      (comp, move) -> {
-        final var radius = move.getTile().getNeighbourPointsRadius();
-        final var origin = new Point(Math.max(move.getX() - radius, 0), Math.max(move.getY() - radius, 0));
-        final var rightBound = Math.min(move.getX() + radius, this.map.getWidth() - 1);
-        final var bottomBound = Math.min(move.getY() + radius, this.map.getHeight() - 1);
-        comp.score += Stream.iterate(origin, p -> p.x <= rightBound && p.y <= bottomBound, p -> {
-          if (p.x == rightBound) {
-            return new Point(origin.x, p.y + 1);
-          }
-          return new Point(p.x + 1, p.y);
-        }).reduce(
-          move.getTile().getPoints(),
-          (points, p) -> points + move.getTile().getNeighbourPointsFor(comp.state[p.y][p.x]),
-          Integer::sum);
-        comp.state[move.getY()][move.getX()] = move.getTile();
-      }, (comp1, comp2) -> {
-        // Should not enter this function, or computation will be incorrect.
-        throw new RuntimeException();
-      }).score;
+    if (score == null) {
+      score = moves.stream().collect(() -> new ScoreComputation(map),
+        (comp, move) -> {
+          final var radius = move.getTile().getNeighbourPointsRadius();
+          final var origin = new Point(Math.max(move.getX() - radius, 0), Math.max(move.getY() - radius, 0));
+          final var rightBound = Math.min(move.getX() + radius, this.map.getWidth() - 1);
+          final var bottomBound = Math.min(move.getY() + radius, this.map.getHeight() - 1);
+          comp.score += Stream.iterate(origin, p -> p.x <= rightBound && p.y <= bottomBound, p -> {
+            if (p.x == rightBound) {
+              return new Point(origin.x, p.y + 1);
+            }
+            return new Point(p.x + 1, p.y);
+          }).reduce(
+            move.getTile().getPoints(),
+            (points, p) -> points + move.getTile().getNeighbourPointsFor(comp.state[p.y][p.x]),
+            Integer::sum);
+          comp.state[move.getY()][move.getX()] = move.getTile();
+        }, (comp1, comp2) -> {
+          // Should not enter this function, or computation will be incorrect.
+          throw new RuntimeException();
+        }).score;
+    }
+    return score;
   }
 }

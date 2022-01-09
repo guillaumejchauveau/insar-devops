@@ -27,7 +27,6 @@ export class ScoreModalComponent implements OnInit {
             this.scores.push([p, score]);
           });
         });
-        console.log(this.scores);
         return this.scores;
       })
       .catch(_ => {

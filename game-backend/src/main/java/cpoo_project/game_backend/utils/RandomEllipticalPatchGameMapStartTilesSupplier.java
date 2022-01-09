@@ -30,6 +30,11 @@ public class RandomEllipticalPatchGameMapStartTilesSupplier implements BiFunctio
         .filter(createPatchFilter(Float.valueOf(width), Float.valueOf(height)))
         .map(p -> (int) (p.x + p.y * width))
         .forEach(i -> startTiles.set(i, tile)));
+    // Ensures there is a place where to put the first house when starting a game.
+    final var startTreeIndex = 1 + random.nextInt(surface - 1);
+    startTiles.set(startTreeIndex - 1, NatureTile.GRASS);
+    startTiles.set(startTreeIndex, NatureTile.TREE);
+    startTiles.set(startTreeIndex + 1, NatureTile.GRASS);
     return startTiles;
   }
 
