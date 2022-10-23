@@ -1,0 +1,89 @@
+include: /.gitlab/common.yml
+
+game-backend:build:
+  extends: .docker-build-job
+  variables:
+    IMAGE_SUFFIX: game-backend
+  before_script:
+    - cd game-backend
+
+game-backend:verify:
+  stage: check
+  image: maven:3.8-openjdk-11
+  needs: []
+  before_script:
+    - cd game-backend
+  script:
+    - mvn -B -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository --fail-at-end verify
+  artifacts:
+    when: always
+    reports:
+      junit: game-backend/target/surefire-reports/TEST-*.xml
+    paths:
+      - game-backend/target/site/jacoco/jacoco.xml
+      - game-backend/target/checkstyle-result.xml
+      - game-backend/target/spotbugsXml.xml
+  cache:
+    key:
+      files:
+        - game-backend/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository/
+
+game-backend:report_jacoco:
+  stage: report
+  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.9
+  needs:
+    - game-backend:verify
+  when: always
+  allow_failure: true
+  before_script:
+    - cd game-backend
+  script:
+    - |
+      python /opt/cover2cover.py \
+        target/site/jacoco/jacoco.xml \
+        $CI_PROJECT_DIR/game-backend/src/main/java/ \
+        > cobertura-coverage.xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: game-backend/cobertura-coverage.xml
+
+game-backend:report_checkstyle:
+  stage: report
+  image: guillaumejchauveau/checkstyle-report-codeclimate
+  needs:
+    - game-backend:verify
+  variables:
+    GIT_STRATEGY: none
+  when: always
+  allow_failure: true
+  before_script:
+    - cd game-backend
+  script:
+    - |
+      cat target/checkstyle-result.xml \
+        | python /opt/checkstyle-report-codeclimate.py \
+        > gl-code-quality-report.json
+  artifacts:
+    reports:
+      codequality: game-backend/gl-code-quality-report.json
+
+game-backend:report_spotbugs:
+  stage: report
+  image: registry.gitlab.com/gitlab-org/security-products/analyzers/spotbugs:2
+  needs:
+    - game-backend:verify
+  variables:
+    GIT_STRATEGY: none
+  when: always
+  allow_failure: true
+  before_script:
+    - cd game-backend
+  script:
+    - /analyzer convert target/spotbugsXml.xml > gl-sast-report.json
+  artifacts:
+    reports:
+      sast: game-backend/gl-sast-report.json
