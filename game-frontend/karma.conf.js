@@ -37,19 +37,27 @@ module.exports = function (config) {
         { type: 'html', subdir: 'report-html' },
         { type: 'text-summary', subdir: '.', file: 'text-summary.txt' },
         { type: 'cobertura', subdir: '.', file: 'cobertura.xml' }
-      ]
+      ],
+      check: {
+        global: {
+          statements: 20
+        }
+      }
     },
     reporters: ['progress', 'kjhtml'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadlessNoSandbox'],
     customLaunchers: {
-      GitlabHeadlessChrome: {
-        base: 'ChromeHeadless',
-        flags: ['--no-sandbox'],
-      },
+      ChromeHeadlessNoSandbox: {
+        base: "ChromeHeadless",
+        flags: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox"
+        ]
+      }
     },
     singleRun: false,
     restartOnFileChange: true

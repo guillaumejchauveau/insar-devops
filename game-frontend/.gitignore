@@ -1,5 +1,10 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
+# cypress
+cypress/screenshots
+cypress/videos
+test-results.xml
+
 # compiled output
 /dist
 /tmp
@@ -7,8 +12,11 @@
 # Only exists if Bazel was run
 /bazel-out
 
-# dependencies
+# Node
 /node_modules
+/.npm
+npm-debug.log
+yarn-error.log
 
 # profiling files
 chrome-profiler-events*.json
@@ -31,15 +39,13 @@ chrome-profiler-events*.json
 .history/*
 
 # misc
-/.sass-cache
+/.angular/cache
 /connect.lock
 /coverage
 /libpeerconnection.log
-npm-debug.log
-yarn-error.log
 testem.log
 /typings
-/tests
+/tests/junit-test-results.xml
 
 # System Files
 .DS_Store

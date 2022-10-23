@@ -1,2 +1,5 @@
-*
-!dist/game-frontend
+.git
+.npm
+.vscode
+dist
+node_modules

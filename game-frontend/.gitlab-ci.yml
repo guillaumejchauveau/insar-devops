@@ -1,0 +1,75 @@
+include: /.gitlab/common.yml
+
+game-frontend:build:
+  extends: .docker-build-job
+  variables:
+    IMAGE_SUFFIX: game-frontend
+  before_script:
+    - cd game-frontend
+
+.game-frontend-node-job:
+  image: guillaumejchauveau/node-chrome:14
+  before_script:
+    - cd game-frontend
+    - npm ci --cache .npm --prefer-offline
+  cache:
+    key:
+      files:
+        - game-frontend/package-lock.json
+    paths:
+      - game-frontend/.npm/
+
+game-frontend:test:
+  extends: .game-frontend-node-job
+  stage: check
+  needs: []
+  script: npm run test:ci
+  artifacts:
+    when: always
+    reports:
+      junit: game-frontend/tests/junit-test-results.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: game-frontend/coverage/cobertura.xml
+
+game-frontend:e2e:
+  extends: .game-frontend-node-job
+  image: cypress/browsers:node14.19.0-chrome100-ff99-edge
+  stage: check
+  needs: []
+  script: npm run e2e:ci
+  artifacts:
+    when: always
+    paths:
+      - game-frontend/cypress/videos/**/*.mp4
+      - game-frontend/cypress/screenshots/**/*.png
+    expire_in: 1 day
+    reports:
+      junit: game-frontend/test-results.xml
+
+game-frontend:lint:
+  extends: .game-frontend-node-job
+  stage: check
+  needs: []
+  script: npm run --silent lint:ci > tslint-report.xml
+  artifacts:
+    when: always
+    paths:
+      - game-frontend/tslint-report.xml
+
+game-frontend:report_lint:
+  stage: report
+  image: guillaumejchauveau/checkstyle-report-codeclimate
+  needs:
+    - game-frontend:lint
+  variables:
+    GIT_STRATEGY: none
+  when: always
+  allow_failure: true
+  before_script:
+    - cd game-frontend
+  script:
+    - cat tslint-report.xml | python /opt/checkstyle-report-codeclimate.py > gl-code-quality-report.json
+  artifacts:
+    reports:
+      codequality: game-frontend/gl-code-quality-report.json
