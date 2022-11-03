@@ -7,15 +7,14 @@ import { MapModel } from '../map/map.model';
 import { UndoHistory } from 'interacto';
 import { GameMoveModel } from './game-move.model';
 import { Router } from '@angular/router';
-import { waitForAsync } from '@angular/core/testing';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
+  public playername: string;
   private game: GameModel;
   private url = '/api/';
-  public playername: string;
 
   constructor(private http: HttpClient, private undoHistory: UndoHistory, private router: Router) {
     const gameMapManager = new GameMapManagerService();
@@ -29,9 +28,7 @@ export class GameService {
     return this.http
       .get<string[]>(this.url + 'maps')
       .toPromise()
-      .catch(_ => {
-        return [];
-      });
+      .catch(_ => []);
   }
 
   public generateMap(): Promise<MapModel> {
@@ -39,9 +36,7 @@ export class GameService {
       .post<IMapModel>(this.url + 'maps', undefined)
       .toPromise()
       .then(
-        map => {
-          return this.convertIMapModel(map);
-        }
+        map => this.convertIMapModel(map)
       );
   }
 
@@ -50,33 +45,8 @@ export class GameService {
       .get<IMapModel>(this.url + 'maps/' + name)
       .toPromise()
       .then(
-        map => {
-          return this.convertIMapModel(map);
-        }
+        map => this.convertIMapModel(map)
       );
-  }
-
-  private convertIMapModel(map: IMapModel): MapModel {
-    const tiles: Tile[] = new Array();
-    map.startTiles.forEach(tile =>
-      {
-        switch (tile.toString()) {
-          case 'WATER': {
-            tiles.push(NatureTile.WATER);
-            break;
-          }
-          case 'TREE': {
-            tiles.push(NatureTile.TREE);
-            break;
-          }
-          default: {
-            tiles.push(NatureTile.GRASS);
-            break;
-          }
-        }
-      }
-    );
-    return new MapModel(map.name, map.width, map.height, tiles);
   }
 
   public endGame(): void {
@@ -98,9 +68,7 @@ export class GameService {
     this.http
       .put(path, replay)
       .toPromise()
-      .catch(_ => {
-        return [];
-      });
+      .catch(_ => []);
     this.router.navigate(['']);
   }
 
@@ -135,6 +103,29 @@ export class GameService {
 
   public generateRandomName(): string {
     return 'player' + Math.floor(1000000 + Math.random() * 8999999);
+  }
+
+  private convertIMapModel(map: IMapModel): MapModel {
+    const tiles: Tile[] = new Array();
+    map.startTiles.forEach(tile =>
+      {
+        switch (tile.toString()) {
+          case 'WATER': {
+            tiles.push(NatureTile.water);
+            break;
+          }
+          case 'TREE': {
+            tiles.push(NatureTile.tree);
+            break;
+          }
+          default: {
+            tiles.push(NatureTile.grass);
+            break;
+          }
+        }
+      }
+    );
+    return new MapModel(map.name, map.width, map.height, tiles);
   }
 }
 

@@ -22,7 +22,7 @@ export class MapComponent implements OnInit {
 
   mouseEnter(x: number, y: number): void {
     const tile = this.gameService.getGame().getInventory().getSelectedTile();
-    if (tile === undefined || this.gameService.getGame().getTiles()[x][y] !== NatureTile.GRASS) {
+    if (tile === undefined || this.gameService.getGame().getTiles()[x][y] !== NatureTile.grass) {
       return;
     }
 
@@ -67,13 +67,13 @@ export class MapComponent implements OnInit {
       .toProduce(i => {
         const elt = i.currentTarget as Element;
 
-        const x = parseInt(elt.getAttribute('data-x') ?? '0', 0);
-        const y = parseInt(elt.getAttribute('data-y') ?? '0', 0);
+        const x = parseInt(elt.getAttribute('data-x') ?? '0', 10);
+        const y = parseInt(elt.getAttribute('data-y') ?? '0', 10);
 
         const tile = this.gameService.getGame().getInventory().getSelectedTile();
         if (tile !== undefined
             && this.gameService.getGame().getInventory().containsTile(tile)
-            && this.gameService.getGame().getTiles()[x][y] === NatureTile.GRASS) {
+            && this.gameService.getGame().getTiles()[x][y] === NatureTile.grass) {
           return new GameMoveModel(x, y, this.gameService.getGame());
         } else {
           return new AnonCmd(() => {});

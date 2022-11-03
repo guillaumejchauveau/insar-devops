@@ -9,15 +9,23 @@
   <name>game-backend</name>
 
   <properties>
+    <checkstyle-plugin.version>3.2.0</checkstyle-plugin.version>
+    <compiler-plugin.version>3.8.1</compiler-plugin.version>
+    <coverage-threshold>0.7</coverage-threshold>
+    <cvss-threshold>11</cvss-threshold>
+    <jacoco-plugin.version>0.8.8</jacoco-plugin.version>
+    <jaxb.version>2.3.1</jaxb.version>
+    <jersey.version>2.35</jersey.version>
+    <junit.version>5.8.1</junit.version>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <owasp.version>7.3.0</owasp.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
-    <junit.version>5.8.1</junit.version>
-    <jersey.version>2.35</jersey.version>
-    <jaxb.version>2.3.1</jaxb.version>
-    <spotbugs.version>4.4.2</spotbugs.version>
-    <coverage-threshold>0.7</coverage-threshold>
+    <puppycrawl-checkstyle.version>10.3.4</puppycrawl-checkstyle.version>
+    <spotbugs-findsecbugs.version>1.12.0</spotbugs-findsecbugs.version>
+    <spotbugs-plugin.version>4.7.2.1</spotbugs-plugin.version>
+    <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
   </properties>
 
   <dependencies>
@@ -211,13 +219,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M5</version>
+        <version>${surefire-plugin.version}</version>
       </plugin>
 
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.7</version>
+        <version>${jacoco-plugin.version}</version>
         <executions>
           <execution>
             <id>pre-unit-test</id>
@@ -255,7 +263,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>${checkstyle-plugin.version}</version>
         <configuration>
           <sourceDirectories>
             <sourceDirectory>src/main/java</sourceDirectory>
@@ -265,19 +273,11 @@
           <consoleOutput>true</consoleOutput>
           <linkXRef>false</linkXRef>
         </configuration>
-        <executions>
-          <execution>
-            <phase>verify</phase>
-            <goals>
-              <goal>checkstyle</goal>
-            </goals>
-          </execution>
-        </executions>
         <dependencies>
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>9.0.1</version>
+            <version>${puppycrawl-checkstyle.version}</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -285,29 +285,30 @@
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>${spotbugs.version}</version>
+        <version>${spotbugs-plugin.version}</version>
         <configuration>
           <includeTests>false</includeTests>
           <effort>Max</effort>
-          <threshold>Low</threshold>
+          <threshold>Medium</threshold>
           <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+          <plugins>
+            <plugin>
+              <groupId>com.h3xstream.findsecbugs</groupId>
+              <artifactId>findsecbugs-plugin</artifactId>
+              <version>${spotbugs-findsecbugs.version}</version>
+            </plugin>
+          </plugins>
         </configuration>
-        <executions>
-          <execution>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs</artifactId>
-            <version>${spotbugs.version}</version>
-            <scope>compile</scope>
-          </dependency>
-        </dependencies>
+      </plugin>
+
+      <plugin>
+        <groupId>org.owasp</groupId>
+        <artifactId>dependency-check-maven</artifactId>
+        <version>${owasp.version}</version>
+        <configuration>
+          <failBuildOnCVSS>${cvss-threshold}</failBuildOnCVSS>
+          <formats>HTML,JUNIT</formats>
+        </configuration>
       </plugin>
     </plugins>
   </build>

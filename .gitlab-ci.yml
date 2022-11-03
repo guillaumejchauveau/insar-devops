@@ -1,16 +1,62 @@
+# Branch pipelines are used because merge request pipelines make
+# all workflow triggers execute if a change was committed at any
+# time in the MR (not just the current comment).
 workflow:
   rules:
-    - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH
+    #- if: $CI_COMMIT_TAG
+    #- if: $CI_MERGE_REQUEST_IID
+    #- if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 stages:
   - build
-  - check
+  - test
   - report
-  - deploy
-  - cleanup
+
+variables:
+  # Comment if GitLab Dependency Proxy is available.
+  CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX: $CI_REGISTRY_IMAGE
 
 include:
-  - /game-backend/.gitlab-ci.yml
-  - /game-frontend/.gitlab-ci.yml
+  - game-backend/.gitlab-ci.yml
+  - game-frontend/.gitlab-ci.yml
+
+secret_detection:
+  stage: test
+  needs: []
+  image: registry.gitlab.com/gitlab-org/security-products/analyzers/secrets:4
+  script: /analyzer run
+  artifacts:
+    when: always
+    reports:
+      secret_detection: gl-secret-detection-report.json
+
+# Mimic the GitLab Dependency Proxy if it is unavailable.
+dependency-proxy:
+  stage: .pre
+  when: manual
+  variables:
+    IMAGES: >-
+      docker:20.10.12-dind
+      maven:3.8-openjdk-11
+      guillaumejchauveau/checkstyle-report-codeclimate
+      guillaumejchauveau/node-chrome:14 
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ''
+    GIT_STRATEGY: none
+  image: docker:20.10.12
+  services:
+    - name: docker:20.10.12-dind
+      alias: docker
+      command: ['--tls=false', '--host=tcp://0.0.0.0:2375']
+  before_script:
+    # Log into the GitLab Registry.
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script: |
+    for IMAGE in $IMAGES
+    do
+      docker pull $IMAGE
+      docker tag $IMAGE ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/$IMAGE
+      docker push ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/$IMAGE
+    done

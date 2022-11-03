@@ -12,26 +12,26 @@ export class GameMapManagerService {
 
   public generateMap(): MapModel {
     const tiles = [
-      NatureTile.TREE, NatureTile.TREE, NatureTile.TREE, NatureTile.GRASS, NatureTile.GRASS,
-        NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
-      NatureTile.TREE, NatureTile.TREE, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
-        NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
-      NatureTile.TREE, NatureTile.TREE, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
-         NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.TREE, NatureTile.GRASS,
-      NatureTile.TREE, NatureTile.TREE, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
-         NatureTile.GRASS, NatureTile.GRASS, NatureTile.TREE, NatureTile.TREE, NatureTile.TREE,
-      NatureTile.TREE, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS,
-         NatureTile.GRASS, NatureTile.GRASS, NatureTile.TREE, NatureTile.TREE, NatureTile.TREE,
-      NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.GRASS, NatureTile.WATER,
-         NatureTile.WATER, NatureTile.WATER, NatureTile.GRASS, NatureTile.TREE, NatureTile.TREE,
-      NatureTile.GRASS, NatureTile.GRASS, NatureTile.WATER, NatureTile.WATER, NatureTile.WATER,
-         NatureTile.WATER, NatureTile.WATER, NatureTile.WATER, NatureTile.TREE, NatureTile.TREE,
-      NatureTile.GRASS, NatureTile.WATER, NatureTile.WATER, NatureTile.WATER, NatureTile.WATER,
-         NatureTile.WATER, NatureTile.WATER, NatureTile.WATER, NatureTile.TREE, NatureTile.TREE,
-      NatureTile.WATER, NatureTile.WATER, NatureTile.WATER, NatureTile.WATER, NatureTile.WATER,
-         NatureTile.WATER, NatureTile.WATER, NatureTile.WATER, NatureTile.GRASS, NatureTile.TREE,
-      NatureTile.WATER, NatureTile.WATER, NatureTile.WATER, NatureTile.WATER, NatureTile.WATER,
-         NatureTile.WATER, NatureTile.WATER, NatureTile.WATER, NatureTile.GRASS, NatureTile.TREE
+      NatureTile.tree, NatureTile.tree, NatureTile.tree, NatureTile.grass, NatureTile.grass,
+        NatureTile.grass, NatureTile.grass, NatureTile.grass, NatureTile.grass, NatureTile.grass,
+      NatureTile.tree, NatureTile.tree, NatureTile.grass, NatureTile.grass, NatureTile.grass,
+        NatureTile.grass, NatureTile.grass, NatureTile.grass, NatureTile.grass, NatureTile.grass,
+      NatureTile.tree, NatureTile.tree, NatureTile.grass, NatureTile.grass, NatureTile.grass,
+         NatureTile.grass, NatureTile.grass, NatureTile.grass, NatureTile.tree, NatureTile.grass,
+      NatureTile.tree, NatureTile.tree, NatureTile.grass, NatureTile.grass, NatureTile.grass,
+         NatureTile.grass, NatureTile.grass, NatureTile.tree, NatureTile.tree, NatureTile.tree,
+      NatureTile.tree, NatureTile.grass, NatureTile.grass, NatureTile.grass, NatureTile.grass,
+         NatureTile.grass, NatureTile.grass, NatureTile.tree, NatureTile.tree, NatureTile.tree,
+      NatureTile.grass, NatureTile.grass, NatureTile.grass, NatureTile.grass, NatureTile.water,
+         NatureTile.water, NatureTile.water, NatureTile.grass, NatureTile.tree, NatureTile.tree,
+      NatureTile.grass, NatureTile.grass, NatureTile.water, NatureTile.water, NatureTile.water,
+         NatureTile.water, NatureTile.water, NatureTile.water, NatureTile.tree, NatureTile.tree,
+      NatureTile.grass, NatureTile.water, NatureTile.water, NatureTile.water, NatureTile.water,
+         NatureTile.water, NatureTile.water, NatureTile.water, NatureTile.tree, NatureTile.tree,
+      NatureTile.water, NatureTile.water, NatureTile.water, NatureTile.water, NatureTile.water,
+         NatureTile.water, NatureTile.water, NatureTile.water, NatureTile.grass, NatureTile.tree,
+      NatureTile.water, NatureTile.water, NatureTile.water, NatureTile.water, NatureTile.water,
+         NatureTile.water, NatureTile.water, NatureTile.water, NatureTile.grass, NatureTile.tree
     ];
 
     const map = new MapModel('mapTest', 10, 10, tiles);

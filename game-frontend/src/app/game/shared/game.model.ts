@@ -5,17 +5,13 @@ import { CityTile, Tile, NatureTile } from './tile.model';
 export class GameModel {
   private score: number;
   private turn: number;
-  private playername: string;
   private inventory: InventoryModel;
-  public map: MapModel;
   private tiles: Array<Array<Tile>>;
 
-  public constructor(map: MapModel, playername: string) {
+  public constructor(public map: MapModel, private playername: string) {
     this.score = 0;
     this.turn = 1;
-    this.playername = playername;
     this.inventory = new InventoryModel();
-    this.map = map;
     this.tiles = new Array();
     for (let i = 0; i < map.width; i++) { // copy map.getTiles() in tiles
       this.tiles[i] = new Array();
@@ -47,10 +43,10 @@ export class GameModel {
     while (this.score >= this.getScoreThreshold()) {
       this.turn ++;
       // By reaching the next turn, the player earns 1 of each tile
-      this.inventory.addTile(CityTile.CIRCUS);
-      this.inventory.addTile(CityTile.HOUSE);
-      this.inventory.addTile(CityTile.WINDMILL);
-      this.inventory.addTile(CityTile.FOUNTAIN);
+      this.inventory.addTile(CityTile.circus);
+      this.inventory.addTile(CityTile.house);
+      this.inventory.addTile(CityTile.windmill);
+      this.inventory.addTile(CityTile.fountain);
     }
   }
 
@@ -86,7 +82,7 @@ export class GameModel {
     let bool = true;
     this.tiles.forEach((value) => {
       value.forEach(tile => {
-        if (tile === NatureTile.GRASS) {
+        if (tile === NatureTile.grass) {
           bool = false;
         }
       });

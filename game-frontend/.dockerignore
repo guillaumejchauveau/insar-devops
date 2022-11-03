@@ -1,5 +1,8 @@
-.git
-.npm
-.vscode
-dist
-node_modules
+*
+!src/
+!.browserslistrc
+!angular.json
+!package-lock.json
+!package.json
+!tsconfig.app.json
+!tsconfig.json

@@ -6,11 +6,11 @@ export class InventoryModel {
   private selectedTile: CityTile | undefined;
 
   public constructor() {
-    this.tiles.set(CityTile.HOUSE, 1);
-    this.tiles.set(CityTile.WINDMILL, 0);
-    this.tiles.set(CityTile.CIRCUS, 0);
-    this.tiles.set(CityTile.FOUNTAIN, 0);
-    this.selectedTile = CityTile.HOUSE;
+    this.tiles.set(CityTile.house, 1);
+    this.tiles.set(CityTile.windmill, 0);
+    this.tiles.set(CityTile.circus, 0);
+    this.tiles.set(CityTile.fountain, 0);
+    this.selectedTile = CityTile.house;
   }
 
   public getTiles(): Map<CityTile, number> {

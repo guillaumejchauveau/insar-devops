@@ -1,28 +1,44 @@
 include: /.gitlab/common.yml
 
-game-frontend:build:
-  extends: .docker-build-job
+.frontend-workflow-rules:
+  - changes: [game-frontend/**/*]
+
+f:image-build:
+  extends: .image-build-job
+  needs: []
+  rules: !reference [.frontend-workflow-rules]
   variables:
     IMAGE_SUFFIX: game-frontend
   before_script:
     - cd game-frontend
 
-.game-frontend-node-job:
-  image: guillaumejchauveau/node-chrome:14
+f:image-scan:
+  extends: .image-scan-job
+  needs: [f:image-build]
+  rules: !reference [f:image-build, rules]
+  variables:
+    IMAGE_SUFFIX: game-frontend
+  artifacts:
+    expose_as: Frontend image scan results
+
+.node-job:
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/guillaumejchauveau/node-chrome:14
   before_script:
     - cd game-frontend
     - npm ci --cache .npm --prefer-offline
   cache:
+    policy: pull
     key:
       files:
         - game-frontend/package-lock.json
     paths:
       - game-frontend/.npm/
 
-game-frontend:test:
-  extends: .game-frontend-node-job
-  stage: check
+f:test:
+  extends: .node-job
+  stage: test
   needs: []
+  rules: !reference [.frontend-workflow-rules]
   script: npm run test:ci
   artifacts:
     when: always
@@ -31,45 +47,58 @@ game-frontend:test:
       coverage_report:
         coverage_format: cobertura
         path: game-frontend/coverage/cobertura.xml
+  cache:
+    policy: pull-push
 
-game-frontend:e2e:
-  extends: .game-frontend-node-job
-  image: cypress/browsers:node14.19.0-chrome100-ff99-edge
-  stage: check
+f:e2e:
+  extends: .node-job
+  stage: test
   needs: []
+  rules: !reference [.frontend-workflow-rules]
+  image: cypress/browsers:node14.19.0-chrome100-ff99-edge
   script: npm run e2e:ci
   artifacts:
     when: always
     paths:
-      - game-frontend/cypress/videos/**/*.mp4
-      - game-frontend/cypress/screenshots/**/*.png
+      - game-frontend/cypress/videos/
+      - game-frontend/cypress/screenshots/
+    expose_as: Frontend E2E results
     expire_in: 1 day
     reports:
       junit: game-frontend/test-results.xml
 
-game-frontend:lint:
-  extends: .game-frontend-node-job
-  stage: check
+f:lint:
+  extends: .node-job
+  stage: test
   needs: []
-  script: npm run --silent lint:ci > tslint-report.xml
+  rules: !reference [.frontend-workflow-rules]
+  script: npm run lint:ci
   artifacts:
     when: always
     paths:
-      - game-frontend/tslint-report.xml
+      - game-frontend/eslint-report.xml
+    expire_in: 30min
+  cache:
+    - !reference [.node-job, cache]
+    - key: eslint
+      paths:
+        - game-frontend/.eslintcache
 
-game-frontend:report_lint:
+f:report_lint:
   stage: report
-  image: guillaumejchauveau/checkstyle-report-codeclimate
-  needs:
-    - game-frontend:lint
+  needs: [f:lint]
+  rules: !reference [f:lint, rules]
   variables:
     GIT_STRATEGY: none
   when: always
   allow_failure: true
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/guillaumejchauveau/checkstyle-report-codeclimate
   before_script:
     - cd game-frontend
-  script:
-    - cat tslint-report.xml | python /opt/checkstyle-report-codeclimate.py > gl-code-quality-report.json
+  script: |
+    cat eslint-report.xml \
+      | python /opt/checkstyle-report-codeclimate.py \
+      > gl-code-quality-report.json
   artifacts:
     reports:
       codequality: game-frontend/gl-code-quality-report.json

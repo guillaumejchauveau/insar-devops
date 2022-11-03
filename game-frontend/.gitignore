@@ -5,6 +5,10 @@ cypress/screenshots
 cypress/videos
 test-results.xml
 
+#eslint
+eslint-report.xml
+.eslintcache
+
 # compiled output
 /dist
 /tmp

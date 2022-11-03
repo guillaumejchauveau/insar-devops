@@ -8,7 +8,6 @@ import { GameService } from '../game/shared/game.service';
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.css']
 })
-@Injectable()
 export class MenuComponent implements OnInit {
 
   constructor(private gameService: GameService, private router: Router) {
