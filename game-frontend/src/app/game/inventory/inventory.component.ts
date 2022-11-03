@@ -30,19 +30,19 @@ export class InventoryComponent implements OnInit {
         let tile: CityTile;
         switch (name) {
           case 'circus' :
-            tile = CityTile.CIRCUS;
+            tile = CityTile.circus;
             break;
           case 'fountain' :
-            tile = CityTile.FOUNTAIN;
+            tile = CityTile.fountain;
             break;
           case 'windmill' :
-            tile = CityTile.WINDMILL;
+            tile = CityTile.windmill;
             break;
           case 'house' :
-            tile = CityTile.HOUSE;
+            tile = CityTile.house;
             break;
           default:
-            tile = CityTile.HOUSE;
+            tile = CityTile.house;
         }
 
         return new AnonCmd(() => {

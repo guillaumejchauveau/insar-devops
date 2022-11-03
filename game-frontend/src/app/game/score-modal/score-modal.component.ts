@@ -29,18 +29,14 @@ export class ScoreModalComponent implements OnInit {
         });
         return this.scores;
       })
-      .catch(_ => {
-        return [];
-      });
+      .catch(_ => []);
   }
 
   private getBestPlayers(): Promise<Array<string>> {
     return this.gameService.getHTTP()
       .get<Array<string>>(this.gameService.getURL() + 'maps/' + this.gameService.getGame().map.name + '/replays?sortBy=score&limit=5')
       .toPromise()
-      .catch(_ => {
-        return [];
-      });
+      .catch(_ => []);
   }
 
   private getScoreByPlayerName(name: string): Promise<number> {

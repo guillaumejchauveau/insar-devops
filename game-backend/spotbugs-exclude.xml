@@ -31,4 +31,7 @@
         <Class name="cpoo_project.game_backend.model.GameReplay" />
         <Method name="getMap" />
     </Match>
+    <Match>
+        <Bug pattern="PREDICTABLE_RANDOM" />
+    </Match>
 </FindBugsFilter>

@@ -3,17 +3,11 @@ import { CityTile } from './tile.model';
 import { GameModel } from './game.model';
 
 export class GameMoveModel extends UndoableCommand {
-  private x: number;
-  private y: number;
-  private gameModel: GameModel;
   private tile: CityTile;
   private turn: number;
 
-  public constructor(x: number, y: number, gameModel: GameModel) {
+  public constructor(private x: number, private y: number, private gameModel: GameModel) {
     super();
-    this.x = x;
-    this.y = y;
-    this.gameModel = gameModel;
     const tileTemp =  this.gameModel.getInventory().getSelectedTile();
     if (tileTemp === undefined) {
       throw new Error('A GameMove Tile should not be undefined');
@@ -24,20 +18,16 @@ export class GameMoveModel extends UndoableCommand {
     this.turn = this.gameModel.getTurn();
   }
 
-  private calcScore(): number {
-    let score = this.tile?.points ?? 0;
-    for (let i = Math.max(this.x - this.tile.radius, 0); i <= Math.min(this.x + this.tile.radius, this.gameModel.map.width - 1); i++){
-      for (let j = Math.max(this.y - this.tile.radius, 0); j <= Math.min(this.y + this.tile.radius, this.gameModel.map.height - 1); j++){
-        score += this.tile?.getNeighbourPointsFor(this.gameModel.getTiles()[i][j]) ?? 0;
-      }
-    }
-    return score;
+  public getX(): number {
+    return this.x;
   }
 
-  protected execution(): void | Promise<void> {
-    this.gameModel.addToScore(this.calcScore());
-    this.gameModel.getInventory().removeTile(this.tile as CityTile);
-    this.gameModel.getTiles()[this.x][this.y] = this.tile as CityTile;
+  public getY(): number {
+    return this.y;
+  }
+
+  public getTile(): CityTile {
+    return this.tile;
   }
 
   redo(): void {
@@ -58,24 +48,28 @@ export class GameMoveModel extends UndoableCommand {
       // If the turn when the move was done is lower than the current turn,
       // --> Go back to the previous turn and remove tiles from the inventory
       if (nb) {
-        inventory.removeTile(CityTile.HOUSE, nb);
-        inventory.removeTile(CityTile.CIRCUS, nb);
-        inventory.removeTile(CityTile.WINDMILL, nb);
-        inventory.removeTile(CityTile.FOUNTAIN, nb);
+        inventory.removeTile(CityTile.house, nb);
+        inventory.removeTile(CityTile.circus, nb);
+        inventory.removeTile(CityTile.windmill, nb);
+        inventory.removeTile(CityTile.fountain, nb);
         this.gameModel.setTurn(this.turn);
       }
     }
   }
 
-  public getX(): number {
-    return this.x;
+  protected execution(): void | Promise<void> {
+    this.gameModel.addToScore(this.calcScore());
+    this.gameModel.getInventory().removeTile(this.tile as CityTile);
+    this.gameModel.getTiles()[this.x][this.y] = this.tile as CityTile;
   }
 
-  public getY(): number {
-    return this.y;
-  }
-
-  public getTile(): CityTile {
-    return this.tile;
+  private calcScore(): number {
+    let score = this.tile?.points ?? 0;
+    for (let i = Math.max(this.x - this.tile.radius, 0); i <= Math.min(this.x + this.tile.radius, this.gameModel.map.width - 1); i++){
+      for (let j = Math.max(this.y - this.tile.radius, 0); j <= Math.min(this.y + this.tile.radius, this.gameModel.map.height - 1); j++){
+        score += this.tile?.getNeighbourPointsFor(this.gameModel.getTiles()[i][j]) ?? 0;
+      }
+    }
+    return score;
   }
 }
