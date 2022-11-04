@@ -1,27 +1,27 @@
 include: /.gitlab/common.yml
 
-.frontend-workflow-rules:
+.f:workflow_rules:
   - changes: [game-frontend/**/*]
 
-f:image-build:
-  extends: .image-build-job
+f:build:
+  extends: .build_job
   needs: []
-  rules: !reference [.frontend-workflow-rules]
+  rules: !reference [.f:workflow_rules]
   variables:
     IMAGE_SUFFIX: game-frontend
   before_script:
     - cd game-frontend
 
-f:image-scan:
-  extends: .image-scan-job
-  needs: [f:image-build]
-  rules: !reference [f:image-build, rules]
+f:container_scanning:
+  extends: .container_scanning_job
+  needs: [f:build]
+  rules: !reference [f:build, rules]
   variables:
     IMAGE_SUFFIX: game-frontend
   artifacts:
-    expose_as: Frontend image scan results
+    expose_as: Frontend container scanning
 
-.node-job:
+.node_job:
   image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/guillaumejchauveau/node-chrome:14
   before_script:
     - cd game-frontend
@@ -35,10 +35,10 @@ f:image-scan:
       - game-frontend/.npm/
 
 f:test:
-  extends: .node-job
+  extends: .node_job
   stage: test
   needs: []
-  rules: !reference [.frontend-workflow-rules]
+  rules: !reference [.f:workflow_rules]
   script: npm run test:ci
   artifacts:
     when: always
@@ -51,27 +51,27 @@ f:test:
     policy: pull-push
 
 f:e2e:
-  extends: .node-job
+  extends: .node_job
   stage: test
   needs: []
-  rules: !reference [.frontend-workflow-rules]
-  image: cypress/browsers:node14.19.0-chrome100-ff99-edge
+  rules: !reference [.f:workflow_rules]
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/cypress/browsers:node14.19.0-chrome100-ff99-edge
   script: npm run e2e:ci
   artifacts:
     when: always
     paths:
       - game-frontend/cypress/videos/
       - game-frontend/cypress/screenshots/
-    expose_as: Frontend E2E results
+    expose_as: Frontend E2E recordings
     expire_in: 1 day
     reports:
       junit: game-frontend/test-results.xml
 
-f:lint:
-  extends: .node-job
+f:code_quality:
+  extends: .node_job
   stage: test
   needs: []
-  rules: !reference [.frontend-workflow-rules]
+  rules: !reference [.f:workflow_rules]
   script: npm run lint:ci
   artifacts:
     when: always
@@ -79,15 +79,15 @@ f:lint:
       - game-frontend/eslint-report.xml
     expire_in: 30min
   cache:
-    - !reference [.node-job, cache]
+    - !reference [.node_job, cache]
     - key: eslint
       paths:
         - game-frontend/.eslintcache
 
-f:report_lint:
-  stage: report
-  needs: [f:lint]
-  rules: !reference [f:lint, rules]
+f:code_quality-report:
+  stage: .post
+  needs: [f:code_quality]
+  rules: !reference [f:code_quality, rules]
   variables:
     GIT_STRATEGY: none
   when: always
