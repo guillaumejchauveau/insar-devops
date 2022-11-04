@@ -1,32 +1,44 @@
 include: /.gitlab/common.yml
 
-.backend-workflow-rules:
+.b:workflow_rules:
   - changes: [game-backend/**/*]
 
-b:image-build:
-  extends: .image-build-job
+b:build:
+  extends: .build_job
   needs: []
-  rules: !reference [.backend-workflow-rules]
+  rules: !reference [.b:workflow_rules]
   variables:
     IMAGE_SUFFIX: game-backend
   before_script:
     - cd game-backend
 
-b:image-scan:
-  extends: .image-scan-job
-  needs: [b:image-build]
-  rules: !reference [b:image-build, rules]
+b:container_scanning:
+  extends: .container_scanning_job
+  needs: [b:build]
+  rules: !reference [b:build, rules]
   variables:
     IMAGE_SUFFIX: game-backend
   artifacts:
-    expose_as: Backend image scan results
+    expose_as: Backend container scanning
 
-.maven-job:
+.maven_job:
   image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/maven:3.8-openjdk-11
+  variables:
+    MAVEN_OPTS: >-
+      -Dhttps.protocols=TLSv1.2
+      -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+      -Dorg.slf4j.simpleLogger.showDateTime=true
+      -Djava.awt.headless=true
+    MAVEN_ARGS: >-
+      --batch-mode
+      --errors
+      --fail-at-end
+      --show-version
+      --no-transfer-progress
+      -DinstallAtEnd=true
+      -DdeployAtEnd=true
   before_script:
     - cd game-backend
-    - echo "mvn -B -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository --fail-at-end \$*" > ./mvnw
-    - chmod +x ./mvnw
   cache:
     policy: pull
     key:
@@ -36,11 +48,11 @@ b:image-scan:
       - $CI_PROJECT_DIR/.m2/repository/
 
 b:test:
-  extends: .maven-job
+  extends: .maven_job
   stage: test
   needs: []
-  rules: !reference [.backend-workflow-rules]
-  script: ./mvnw verify
+  rules: !reference [.b:workflow_rules]
+  script: mvn $MAVEN_ARGS verify
   artifacts:
     when: always
     reports:
@@ -50,47 +62,45 @@ b:test:
   cache:
     policy: pull-push
 
-b:checkstyle:
-  extends: .maven-job
+b:code_quality:
+  extends: .maven_job
   stage: test
   needs: []
-  rules: !reference [.backend-workflow-rules]
-  script: ./mvnw checkstyle:check
+  rules: !reference [.b:workflow_rules]
+  script: mvn $MAVEN_ARGS checkstyle:check
   artifacts:
     when: always
     paths:
       - game-backend/target/checkstyle-result.xml
     expire_in: 30min
 
-b:spotbugs:
-  extends: .maven-job
+b:sast:
+  extends: .maven_job
   stage: test
   needs: []
-  rules: !reference [.backend-workflow-rules]
-  script:
-    - ./mvnw compile
-    - ./mvnw spotbugs:check
+  rules: !reference [.b:workflow_rules]
+  script: mvn $MAVEN_ARGS compile spotbugs:check
   artifacts:
     when: always
     paths:
       - game-backend/target/spotbugsXml.xml
     expire_in: 30min
 
-b:dependency-check:
-  extends: .maven-job
+b:dependency_scanning:
+  extends: .maven_job
   stage: test
   needs: []
   rules:
     - changes: [game-backend/pom.xml]
-  script: ./mvnw dependency-check:check
+  script: mvn $MAVEN_ARGS dependency-check:check
   artifacts:
     when: always
     paths:
-      - game-backend/target/dependency-check-junit.xml
-    expose_as: Backend dependency check
+      - game-backend/target/dependency-check-report.html
+    expose_as: Backend dependency scanning
 
-b:report_jacoco:
-  stage: report
+b:test_coverage-report:
+  stage: .post
   needs: [b:test]
   rules: !reference [b:test, rules]
   when: always
@@ -109,10 +119,10 @@ b:report_jacoco:
         coverage_format: cobertura
         path: game-backend/cobertura-coverage.xml
 
-b:report_checkstyle:
-  stage: report
-  needs: [b:checkstyle]
-  rules: !reference [b:checkstyle, rules]
+b:code_quality-report:
+  stage: .post
+  needs: [b:code_quality]
+  rules: !reference [b:code_quality, rules]
   variables:
     GIT_STRATEGY: none
   when: always
@@ -128,10 +138,10 @@ b:report_checkstyle:
     reports:
       codequality: game-backend/gl-code-quality-report.json
 
-b:report_spotbugs:
-  stage: report
-  needs: [b:spotbugs]
-  rules: !reference [b:spotbugs, rules]
+b:sast-report:
+  stage: .post
+  needs: [b:sast]
+  rules: !reference [b:sast, rules]
   variables:
     GIT_STRATEGY: none
   when: always

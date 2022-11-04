@@ -1,4 +1,4 @@
-.image-vars-script: &image-vars-script
+.image_vars_script: &image_vars_script
   # Define image tags.
   - |
     if [[ -z "$CI_COMMIT_TAG" ]]; then
@@ -12,18 +12,11 @@
     export image_tagged="$CI_APPLICATION_REPOSITORY/$IMAGE_SUFFIX:$CI_APPLICATION_TAG"
     export image_latest="$CI_APPLICATION_REPOSITORY/$IMAGE_SUFFIX:latest"
 
-.image-build-job:
+.build_job:
   stage: build
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ''
   image: registry.gitlab.com/gitlab-org/cluster-integration/auto-build-image:v1.19.0
-  services:
-    - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:20.10.12-dind
-      alias: docker
-      command: ['--tls=false', '--host=tcp://0.0.0.0:2375']
   script:
-    - *image-vars-script
+    - *image_vars_script
     # Log into the GitLab Registry and Dependency Proxy.
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
     - echo "$CI_DEPENDENCY_PROXY_PASSWORD" | docker login -u "$CI_DEPENDENCY_PROXY_USER" --password-stdin "$CI_DEPENDENCY_PROXY_SERVER"
@@ -38,13 +31,13 @@
       --push \
       . 2>&1
 
-.image-scan-job:
+.container_scanning_job:
   stage: test
   variables:
     GIT_STRATEGY: none
   image: registry.gitlab.com/gitlab-org/security-products/analyzers/container-scanning:5
   script:
-    - *image-vars-script
+    - *image_vars_script
     - gtcs scan $image_tagged
   artifacts:
     when: always
