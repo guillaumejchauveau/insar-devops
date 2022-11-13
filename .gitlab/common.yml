@@ -14,22 +14,31 @@
 
 .build_job:
   stage: build
-  image: registry.gitlab.com/gitlab-org/cluster-integration/auto-build-image:v1.19.0
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.1-debug
+    entrypoint: [""]
   script:
     - *image_vars_script
-    # Log into the GitLab Registry and Dependency Proxy.
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    - echo "$CI_DEPENDENCY_PROXY_PASSWORD" | docker login -u "$CI_DEPENDENCY_PROXY_USER" --password-stdin "$CI_DEPENDENCY_PROXY_SERVER"
+    # Log into the GitLab Registry and Dependency Proxy.   
+    - >
+      echo "{
+        \"auths\":{
+          \"$CI_REGISTRY\":{
+            \"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"
+          },
+          \"$CI_DEPENDENCY_PROXY_SERVER\":{
+            \"auth\":\"$(printf "%s:%s" "${CI_DEPENDENCY_PROXY_USER}" "${CI_DEPENDENCY_PROXY_PASSWORD}" | base64 | tr -d '\n')\"
+          }
+        }
+      }" > /kaniko/.docker/config.json
     # Build and push the image.
     - |
-      docker buildx build \
-      --cache-from "$image_previous" \
-      --cache-from "$image_latest" \
-      --tag "$image_tagged" \
-      --tag "$image_latest" \
-      --progress=plain \
-      --push \
-      . 2>&1
+      /kaniko/executor \
+      --context "$PWD" \
+      --destination "$image_tagged" \
+      --destination "$image_latest" \
+      --cache=true \
+      --cache-repo="$CI_REGISTRY_IMAGE/buildcache"
 
 .container_scanning_job:
   stage: test
