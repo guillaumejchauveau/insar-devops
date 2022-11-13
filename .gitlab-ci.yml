@@ -37,14 +37,14 @@ dependency_proxy:
       guillaumejchauveau/node-chrome:14
       cypress/browsers:node14.19.0-chrome100-ff99-edge
     GIT_STRATEGY: none
-  image: docker:20.10.12
+  image: 
+    name: gcr.io/go-containerregistry/crane:debug
+    entrypoint: [""]
   before_script:
     # Log into the GitLab Registry.
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script: |
     for IMAGE in $IMAGES
     do
-      docker pull $IMAGE
-      docker tag $IMAGE ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/$IMAGE
-      docker push ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/$IMAGE
+      crane cp $IMAGE ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/$IMAGE
     done
