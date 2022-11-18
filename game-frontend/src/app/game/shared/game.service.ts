@@ -107,24 +107,30 @@ export class GameService {
 
   private convertIMapModel(map: IMapModel): MapModel {
     const tiles: Tile[] = new Array();
-    map.startTiles.forEach(tile =>
-      {
-        switch (tile.toString()) {
-          case 'WATER': {
-            tiles.push(NatureTile.water);
-            break;
-          }
-          case 'TREE': {
-            tiles.push(NatureTile.tree);
-            break;
-          }
-          default: {
-            tiles.push(NatureTile.grass);
-            break;
+    if (map.startTiles === undefined) {
+      if (map.height !== 0 && map.width !== 0) {
+        throw new Error('startTiles undefined');
+      }
+    } else {
+      map.startTiles.forEach(tile =>
+        {
+          switch (tile.toString()) {
+            case 'WATER': {
+              tiles.push(NatureTile.water);
+              break;
+            }
+            case 'TREE': {
+              tiles.push(NatureTile.tree);
+              break;
+            }
+            default: {
+              tiles.push(NatureTile.grass);
+              break;
+            }
           }
         }
-      }
-    );
+      );
+    }
     return new MapModel(map.name, map.width, map.height, tiles);
   }
 }

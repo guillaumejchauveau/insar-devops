@@ -1,5 +1,4 @@
 import { CityTile } from '../shared/tile.model';
-import { GameService } from '../shared/game.service';
 
 export class InventoryModel {
   private tiles: Map<CityTile, number> = new Map();
