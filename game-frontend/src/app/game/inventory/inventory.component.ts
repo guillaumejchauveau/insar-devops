@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GameService } from '../shared/game.service';
-import { AnonCmd, PartialPointBinder, Undo } from 'interacto';
+import { AnonCmd, PartialPointBinder } from 'interacto';
 import { CityTile } from '../shared/tile.model';
 
 @Component({
