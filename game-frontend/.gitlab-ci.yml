@@ -21,73 +21,45 @@ f:container_scanning:
   artifacts:
     expose_as: Frontend container scanning
 
-.node_job:
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/guillaumejchauveau/node-chrome:14
+f:test_e2e_quality:
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/cypress/browsers:node14.19.0-chrome100-ff99-edge
+  stage: test
+  needs: []
+  rules: !reference [.f:workflow_rules]
   before_script:
     - cd game-frontend
     - npm ci --cache .npm --prefer-offline
-  cache:
-    policy: pull
-    key:
-      files:
-        - game-frontend/package-lock.json
-    paths:
-      - game-frontend/.npm/
-
-f:test:
-  extends: .node_job
-  stage: test
-  needs: []
-  rules: !reference [.f:workflow_rules]
-  script: npm run test:ci
-  artifacts:
-    when: always
-    reports:
-      junit: game-frontend/tests/junit-test-results.xml
-      coverage_report:
-        coverage_format: cobertura
-        path: game-frontend/coverage/cobertura.xml
-  cache:
-    policy: pull-push
-
-f:e2e:
-  extends: .node_job
-  stage: test
-  needs: []
-  rules: !reference [.f:workflow_rules]
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/cypress/browsers:node14.19.0-chrome100-ff99-edge
-  script: npm run e2e:ci
+  script:
+    - npm run test:ci
+    - npm run e2e:ci
+    - npm run lint:ci
   artifacts:
     when: always
     paths:
       - game-frontend/cypress/videos/
       - game-frontend/cypress/screenshots/
-    expose_as: Frontend E2E recordings
-    expire_in: 1 day
-    reports:
-      junit: game-frontend/test-results.xml
-
-f:code_quality:
-  extends: .node_job
-  stage: test
-  needs: []
-  rules: !reference [.f:workflow_rules]
-  script: npm run lint:ci
-  artifacts:
-    when: always
-    paths:
       - game-frontend/eslint-report.xml
-    expire_in: 30min
+    reports:
+      junit:
+        - game-frontend/tests/junit-test-results.xml
+        - game-frontend/test-results.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: game-frontend/coverage/cobertura.xml
   cache:
-    - !reference [.node_job, cache]
+    - key:
+        files:
+          - game-frontend/package-lock.json
+      paths:
+        - game-frontend/.npm/
     - key: eslint
       paths:
         - game-frontend/.eslintcache
 
 f:code_quality-report:
   stage: .post
-  needs: [f:code_quality]
-  rules: !reference [f:code_quality, rules]
+  needs: [f:test_e2e_quality]
+  rules: !reference [f:test_e2e_quality, rules]
   variables:
     GIT_STRATEGY: none
   when: always
