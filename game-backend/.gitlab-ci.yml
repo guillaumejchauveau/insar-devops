@@ -47,44 +47,25 @@ b:container_scanning:
     paths:
       - $CI_PROJECT_DIR/.m2/repository/
 
-b:test:
+b:test_quality_sast:
   extends: .maven_job
   stage: test
   needs: []
   rules: !reference [.b:workflow_rules]
-  script: mvn $MAVEN_ARGS verify
+  script: 
+    - mvn $MAVEN_ARGS verify
+    - mvn $MAVEN_ARGS checkstyle:check
+    - mvn $MAVEN_ARGS compile spotbugs:check
   artifacts:
     when: always
     reports:
       junit: game-backend/target/surefire-reports/TEST-*.xml
     paths:
       - game-backend/target/site/jacoco/jacoco.xml
+      - game-backend/target/checkstyle-result.xml
+      - game-backend/target/spotbugsXml.xml
   cache:
     policy: pull-push
-
-b:code_quality:
-  extends: .maven_job
-  stage: test
-  needs: []
-  rules: !reference [.b:workflow_rules]
-  script: mvn $MAVEN_ARGS checkstyle:check
-  artifacts:
-    when: always
-    paths:
-      - game-backend/target/checkstyle-result.xml
-    expire_in: 30min
-
-b:sast:
-  extends: .maven_job
-  stage: test
-  needs: []
-  rules: !reference [.b:workflow_rules]
-  script: mvn $MAVEN_ARGS compile spotbugs:check
-  artifacts:
-    when: always
-    paths:
-      - game-backend/target/spotbugsXml.xml
-    expire_in: 30min
 
 b:dependency_scanning:
   extends: .maven_job
@@ -101,8 +82,8 @@ b:dependency_scanning:
 
 b:test_coverage-report:
   stage: .post
-  needs: [b:test]
-  rules: !reference [b:test, rules]
+  needs: [b:test_quality_sast]
+  rules: !reference [b:test_quality_sast, rules]
   when: always
   allow_failure: true
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.9
@@ -121,8 +102,8 @@ b:test_coverage-report:
 
 b:code_quality-report:
   stage: .post
-  needs: [b:code_quality]
-  rules: !reference [b:code_quality, rules]
+  needs: [b:test_quality_sast]
+  rules: !reference [b:test_quality_sast, rules]
   variables:
     GIT_STRATEGY: none
   when: always
@@ -140,8 +121,8 @@ b:code_quality-report:
 
 b:sast-report:
   stage: .post
-  needs: [b:sast]
-  rules: !reference [b:sast, rules]
+  needs: [b:test_quality_sast]
+  rules: !reference [b:test_quality_sast, rules]
   variables:
     GIT_STRATEGY: none
   when: always
