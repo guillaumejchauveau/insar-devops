@@ -16,7 +16,7 @@ server { \
   location / { \
     root /usr/share/nginx/html; \
     index index.html; \
-    try_files $uri /index.html =404; \
+    try_files \$uri /index.html =404; \
   } \
 }" > /etc/nginx/conf.d/default.conf
 
