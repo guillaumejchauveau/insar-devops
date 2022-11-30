@@ -52,7 +52,7 @@ b:test_quality_sast:
   stage: test
   needs: []
   rules: !reference [.b:workflow_rules]
-  script: 
+  script:
     - mvn $MAVEN_ARGS verify
     - mvn $MAVEN_ARGS checkstyle:check
     - mvn $MAVEN_ARGS compile spotbugs:check

@@ -13,8 +13,8 @@ variables:
   CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX: $CI_REGISTRY_IMAGE
 
 include:
-  - game-backend/.gitlab-ci.yml
-  - game-frontend/.gitlab-ci.yml
+  - /game-backend/.gitlab-ci.yml
+  - /game-frontend/.gitlab-ci.yml
 
 secret_detection:
   stage: test
@@ -37,7 +37,7 @@ dependency_proxy:
       guillaumejchauveau/node-chrome:14
       cypress/browsers:node14.19.0-chrome100-ff99-edge
     GIT_STRATEGY: none
-  image: 
+  image:
     name: gcr.io/go-containerregistry/crane:debug
     entrypoint: [""]
   before_script:

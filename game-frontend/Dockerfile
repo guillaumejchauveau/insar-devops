@@ -10,15 +10,8 @@ RUN npm run build
 
 FROM docker.io/nginx:alpine
 
-RUN echo "\
-server { \
-  listen 80; \
-  location / { \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    try_files \$uri /index.html =404; \
-  } \
-}" > /etc/nginx/conf.d/default.conf
+COPY .docker/nginx.conf /etc/nginx/conf.d/default.conf
 
+ENV NGINX_ENTRYPOINT_QUIET_LOGS=1
 
 COPY --from=builder /app/dist/game-frontend /usr/share/nginx/html/

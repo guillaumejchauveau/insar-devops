@@ -1,4 +1,5 @@
 *
+!.docker/
 !src/
 !.browserslistrc
 !angular.json
