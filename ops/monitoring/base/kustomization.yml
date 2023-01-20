@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - grafana.yml
+  - grafana-config.yml
+  - loki.yml
+  - loki-config.yml
+  - prometheus.yml
+  - prometheus-config.yml
+  - node-exporter.yml
+  - tempo.yml
+  - tempo-config.yml
+buildMetadata: [managedByLabel]
+commonLabels:
+  app.kubernetes.io/part-of: monitoring.ops
