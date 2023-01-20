@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base
+  - ingress.yml
+commonLabels:
+  app.kubernetes.io/instance: demo
+namespace: game-demo
+images:
+  - name: backend
+    newName: gitlab.insa-rennes.fr:5050/devops-2022/iacone-dabat-chauveau/master/game-backend
+    newTag: latest
+  - name: frontend
+    newName: gitlab.insa-rennes.fr:5050/devops-2022/iacone-dabat-chauveau/master/game-frontend
+    newTag: latest
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: game-backend-demo
+      - op: replace
+        path: /spec/template/spec/containers/0/env/1/value
+        value: >
+          app.kubernetes.io/name=backend,
+          app.kubernetes.io/part-of=game,
+          app.kubernetes.io/instance=demo,
+          namespace=game-demo
+    #     pod=
+    target:
+      kind: Deployment
+      name: backend
