@@ -14,7 +14,7 @@ FROM docker.io/openjdk:11-jre-slim
 EXPOSE 4444
 EXPOSE 9464
 
-ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar /opt/
+ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.20.2/opentelemetry-javaagent.jar /opt/
 
 RUN echo "\
 otel.metrics.exporter=prometheus\n\
